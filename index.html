@@ -33,26 +33,26 @@ h2{font-family:Unbounded,sans-serif;font-weight:700;font-size:20px;margin:6px 2p
 .seg button.on{background:var(--paper);color:var(--ink)}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .card{background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;position:relative}
-.meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12px;color:var(--mute);margin-bottom:8px;padding-right:86px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12px;color:var(--mute);margin-bottom:8px}
 .tag{color:var(--paper);background:rgba(255,255,255,.07);padding:2px 8px;border-radius:6px;font-weight:600}
 .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em}
 .badge.pending{background:rgba(245,158,59,.15);color:var(--amber)}
 .badge.no{background:rgba(255,74,43,.15);color:#ff8b74}
-.card h3{font-family:Unbounded,sans-serif;font-weight:500;font-size:16px;line-height:1.3;margin-bottom:6px;padding-right:86px;word-wrap:break-word}
+.card h3{font-family:Unbounded,sans-serif;font-weight:500;font-size:16px;line-height:1.3;margin-bottom:6px;word-wrap:break-word}
 .card p.txt{color:#d8d3c9;white-space:pre-wrap;word-wrap:break-word;font-size:14px}
 .card a.src{display:inline-block;margin-top:8px;color:#b9a8ff;font-size:13px;word-break:break-all}
-.stamp{position:absolute;top:14px;right:14px;width:72px;height:72px;border-radius:50%;border:3px solid currentColor;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-8deg);font-family:"JetBrains Mono",monospace;opacity:.95}
+.stamp{float:right;margin:-2px -2px 10px 14px;shape-outside:circle(50%);width:72px;height:72px;border-radius:50%;border:3px solid currentColor;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-8deg);font-family:"JetBrains Mono",monospace;opacity:.95}
 .stamp b{font-size:24px;line-height:1;font-weight:700}
 .stamp i{font-style:normal;font-size:8px;letter-spacing:.12em;text-transform:uppercase;margin-top:3px;font-family:Manrope,system-ui,sans-serif;font-weight:700}
 .stamp.none{color:#5c5850;border-style:dashed}
-.split{display:flex;gap:14px;margin-top:12px;font-size:12px;color:var(--mute);flex-wrap:wrap}
+.split{clear:both;display:flex;gap:14px;margin-top:12px;font-size:12px;color:var(--mute);flex-wrap:wrap}
 .split b{font-family:"JetBrains Mono",monospace;color:var(--paper);font-size:14px;margin-right:3px}
-.crit{display:grid;grid-template-columns:1fr;gap:5px;margin-top:12px}
+.crit{clear:both;display:grid;grid-template-columns:1fr;gap:5px;margin-top:12px}
 .crow{display:grid;grid-template-columns:118px 1fr 34px;align-items:center;gap:8px;font-size:12px;color:var(--mute)}
 .bar{height:6px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}
 .bar>div{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--vio),var(--red))}
 .crow .v{font-family:"JetBrains Mono",monospace;color:var(--paper);text-align:right}
-.actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.actions{clear:both;display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
 .btn{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--paper);font:600 13px Manrope,system-ui,sans-serif;padding:9px 14px;border-radius:10px;cursor:pointer}
 .btn:hover{background:rgba(255,255,255,.1)}
 .btn.primary{background:var(--red);border-color:var(--red);color:#fff}
@@ -61,7 +61,7 @@ h2{font-family:Unbounded,sans-serif;font-weight:700;font-size:20px;margin:6px 2p
 .btn.ok{border-color:rgba(94,211,154,.5);color:var(--green)}
 .btn.danger{border-color:rgba(255,74,43,.45);color:#ff8b74;background:transparent}
 .btn:disabled{opacity:.45;cursor:default}
-.reviews{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:10px}
+.reviews{clear:both;margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:10px}
 .rv{font-size:13px}
 .rv .who{font-weight:700;font-size:12px;margin-bottom:2px;display:flex;gap:8px;align-items:center}
 .rv .who .n{font-family:"JetBrains Mono",monospace;color:var(--gold)}
@@ -81,7 +81,7 @@ h2{font-family:Unbounded,sans-serif;font-weight:700;font-size:20px;margin:6px 2p
 .card.top{border-color:rgba(242,193,78,.35);background:linear-gradient(135deg,rgba(242,193,78,.08),var(--card) 50%)}
 /* form */
 label.f{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:14px 0 6px}
-input[type=text],input[type=url],input[type=search],input[type=email],input[type=password],textarea,select{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;color:var(--paper);font:500 15px Manrope,system-ui,sans-serif,system-ui,sans-serif;padding:11px 12px;outline:none}
+input[type=text],input[type=url],input[type=search],input[type=email],input[type=password],textarea,select{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;color:var(--paper);font:500 16px Manrope,system-ui,sans-serif;padding:11px 12px;outline:none}
 input:focus,textarea:focus,select:focus{border-color:rgba(255,74,43,.6)}
 textarea{min-height:120px;resize:vertical}
 .check{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:14px;cursor:pointer}
@@ -114,6 +114,27 @@ input[type=range]{width:100%;accent-color:var(--red);height:28px}
 .urow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:10px;font-size:14px}
 #toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;background:var(--paper);color:var(--ink);font-weight:600;font-size:14px;padding:10px 16px;border-radius:12px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.on{opacity:1}
+.av{flex:none;border-radius:50%;object-fit:cover;display:inline-flex;align-items:center;justify-content:center;font-family:Unbounded,system-ui,sans-serif;font-weight:700;color:#0d0d11;overflow:hidden;vertical-align:middle}
+.ulink{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-align:left}
+.ulink:hover span{text-decoration:underline}
+.prof-top{display:flex;gap:16px;align-items:center}
+.prof-top h2{margin:0 0 6px;word-break:break-word}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.stat b{display:block;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:20px}
+.stat span{font-size:11px;color:var(--mute)}
+.bio{margin-top:14px;color:#d8d3c9;white-space:pre-wrap;word-wrap:break-word;font-size:14px}
+.rrow{display:grid;grid-template-columns:1fr 44px;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.rrow:first-child{border-top:0}
+.rrow h4{font-weight:600;font-size:14px;line-height:1.3;word-wrap:break-word}
+.rrow p{font-size:13px;color:var(--mute);margin-top:2px;white-space:pre-wrap;word-wrap:break-word}
+.rrow .n{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:700;font-size:18px;text-align:right}
+.avedit{display:flex;gap:16px;align-items:center;margin-top:10px}
+.avedit .btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.sw{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.sw button{width:32px;height:32px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+.sw button.on{border-color:var(--paper);box-shadow:0 0 0 2px var(--ink) inset}
 .legend{font-size:12px;color:var(--mute);margin:4px 2px 14px;line-height:1.5}
 </style>
 </head>
@@ -185,6 +206,20 @@ const fmt1 = v => v==null?'—':String(Math.round(v));
 let toastT; function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3000);}
 function plural(n,a,b,c){n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return c;if(n1>1&&n1<5)return b;if(n1===1)return a;return c;}
 const nameOf = id => id===S.me.id?'Вы':((S.names[id]&&S.names[id].name)||'Участник');
+const realName = id => (S.names[id]&&S.names[id].name)||'Участник';
+const COLORS=['#ff4a2b','#f2c14e','#5ed39a','#4fb3ff','#8b6cff','#ff6fb5','#f59e3b','#c9c3b8'];
+function hashColor(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length];}
+function okAvatar(a){return typeof a==='string'&&(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(a)||/^https:\/\/lh\d\.googleusercontent\.com\/[^\s"'<>]+$/.test(a));}
+function okColor(c){return typeof c==='string'&&/^#[0-9a-fA-F]{6}$/.test(c);}
+function avatarFor(u,id,size){
+  size=size||28;
+  if(u&&okAvatar(u.avatar))return `<img class="av" src="${esc(u.avatar)}" alt="" style="width:${size}px;height:${size}px" referrerpolicy="no-referrer">`;
+  const col=(u&&okColor(u.color))?u.color:hashColor(id);
+  const ini=String((u&&u.name)||'?').trim().split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase()||'?';
+  return `<span class="av" style="width:${size}px;height:${size}px;background:${col};font-size:${Math.round(size*.4)}px">${esc(ini)}</span>`;
+}
+const avatarHtml=(id,size)=>avatarFor(S.names[id],id,size);
+const ulink=(id,size)=>`<button class="ulink" data-act="profile" data-id="${esc(id)}">${avatarHtml(id,size||22)}<span>${esc(nameOf(id))}</span></button>`;
 
 /* ---------- Firebase ---------- */
 const configured = !String(firebaseConfig.apiKey).includes('ВСТАВЬТЕ');
@@ -282,6 +317,7 @@ const ICON={
   feed:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
   rating:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3"/></svg>',
   add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+  profile:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
   admin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>'
 };
 function renderTabs(){
@@ -291,14 +327,15 @@ function renderTabs(){
   const pend=S.me.admin?allPosts().filter(p=>p.status==='pending').length:0;
   const tabs=[['feed','Лента'],['rating','Рейтинг'],['add','Предложить']];
   if(S.me.admin)tabs.push(['admin','Комитет']);
-  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-tab="${k}" class="${S.tab===k?'on':''}">${ICON[k]}${l}${k==='admin'&&pend?`<span class="dot">${pend}</span>`:''}</button>`).join('');
+  tabs.push(['profile','Профиль']);
+  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-tab="${k}" class="${S.tab===k&&(k!=='profile'||S.profileId===S.me.id)?'on':''}">${ICON[k]}${l}${k==='admin'&&pend?`<span class="dot">${pend}</span>`:''}</button>`).join('');
 }
 function renderRole(){
   if(!S.user){$('#role').innerHTML='';return;}
   let c='',t='Участник';
   if(S.me.admin){c='admin';t='Админ';}
   else if(S.me.expert){c='expert';t='Знаток';}
-  $('#role').innerHTML=`<button class="chip ${c}" id="profileBtn" style="cursor:pointer;background:rgba(255,255,255,.04);color:inherit">${esc(t)} · ${esc(nameOf(S.me.id)==='Вы'?((S.names[S.me.id]&&S.names[S.me.id].name)||'профиль'):'профиль')}</button>`;
+  $('#role').innerHTML=`<button class="chip ${c}" id="profileBtn" style="cursor:pointer;background:rgba(255,255,255,.04);color:inherit;display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 4px">${avatarHtml(S.me.id,24)}${esc(t)}</button>`;
 }
 function render(){
   const a=document.activeElement;
@@ -312,6 +349,7 @@ function render(){
   if(S.tab==='rating')v.innerHTML=viewRating();
   else if(S.tab==='add')v.innerHTML=viewAdd();
   else if(S.tab==='admin'&&S.me.admin)v.innerHTML=viewAdmin();
+  else if(S.tab==='profile')v.innerHTML=viewProfile(S.profileId||S.me.id);
   else{S.tab='feed';v.innerHTML=viewFeed();}
 }
 function viewSetup(){
@@ -339,10 +377,10 @@ function viewLogin(){
 }
 function authorHtml(p){
   if(p.anon)return S.me.admin&&S.tab==='admin'&&p.author?`Аноним (${esc(nameOf(p.author))})`:'Аноним';
-  return esc(p.by?nameOf(p.by):'Участник');
+  return p.by?ulink(p.by,20):'Участник';
 }
 function stamp(v,label){
-  if(v==null)return `<div class="stamp none"><b>—</b><i>${label||'нет оценок'}</i></div>`;
+  if(v==null)return `<div class="stamp none"><b>—</b><i>${label||'ждём'}</i></div>`;
   return `<div class="stamp" style="color:${scoreColor(v)}"><b>${v}</b><i>${label||'итог'}</i></div>`;
 }
 function critHtml(c){
@@ -370,7 +408,7 @@ function card(p,sc,extra){
     ${link?`<a class="src" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Источник ↗</a>`:''}
     ${p.status==='ok'&&sc.n?`<div class="split"><span><b style="color:var(--gold)">${fmt1(sc.e)}</b>знатоки · ${sc.ne}</span><span><b>${fmt1(sc.p)}</b>народ · ${sc.np}</span></div>${critHtml(sc.crit)}`:''}
     ${acts?`<div class="actions">${acts}</div>`:''}
-    ${open&&sc.reviews.length?`<div class="reviews">${sc.reviews.map(r=>`<div class="rv"><div class="who">${r.exp?'<span class="chip expert" style="padding:2px 7px;font-size:10px">знаток</span>':''}<span>${esc(nameOf(r.u))}</span><span class="n">${r.tot}</span></div><p>${esc(r.note)}</p></div>`).join('')}</div>`:''}
+    ${open&&sc.reviews.length?`<div class="reviews">${sc.reviews.map(r=>`<div class="rv"><div class="who">${r.exp?'<span class="chip expert" style="padding:2px 7px;font-size:10px">знаток</span>':''}${ulink(r.u,22)}<span class="n">${r.tot}</span></div><p>${esc(r.note)}</p></div>`).join('')}</div>`:''}
   </article>`;
 }
 function loadingOrEmpty(title,text){
@@ -454,7 +492,7 @@ function viewAdmin(){
 }
 function usersHtml(users){
   if(!users.length)return '<div class="legend">Никого не найдено. Участник появится здесь после первого входа.</div>';
-  return users.map(u=>`<div class="urow"><span>${esc(u.name)}${u.id===S.me.id?' (вы)':''}</span><span style="display:flex;gap:6px">
+  return users.map(u=>`<div class="urow">${ulink(u.id,28)}<span style="display:flex;gap:6px">
     <button class="btn ${u.r.expert?'ok':''}" style="padding:6px 10px" data-act="toggleExpert" data-id="${esc(u.id)}">${u.r.expert?'✓ Знаток':'Знаток'}</button>
     ${u.id===S.me.id?'':`<button class="btn ${u.r.admin?'ok':''}" style="padding:6px 10px" data-act="toggleAdmin" data-id="${esc(u.id)}">${u.r.admin?'✓ Админ':'Админ'}</button>`}
   </span></div>`).join('');
@@ -465,25 +503,88 @@ function openSheet(html){const box=$('#sheetBox');box.style.position='relative';
 function closeSheet(){$('#sheet').classList.add('hidden');$('#sheetBox').innerHTML='';}
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet();});
 
-function openProfile(){
-  const cur=(S.names[S.me.id]&&S.names[S.me.id].name)||'';
+function styleOf(avg){if(avg==null)return '';if(avg<40)return 'Суровый критик';if(avg<55)return 'Строгий судья';if(avg<70)return 'Объективный эксперт';if(avg<82)return 'Добрый оценщик';return 'Щедрая душа';}
+function viewProfile(uid){
+  const u=S.names[uid]||{};
+  const own=uid===S.me.id;
+  const r=S.roles[uid]||{};
+  const posts=allPosts();
+  const byId={};posts.forEach(p=>byId[p.id]=p);
+  const mine=Object.values(S.ratings).filter(x=>x&&x.uid===uid&&Array.isArray(x.s)&&x.s.length===5&&byId[x.pid]&&byId[x.pid].status==='ok')
+    .map(x=>({p:byId[x.pid],tot:x.s.reduce((a,b)=>a+(+b||0),0),note:String(x.note||'').trim(),at:+x.at||0})).sort((a,b)=>b.at-a.at);
+  const avg=mine.length?mine.reduce((a,b)=>a+b.tot,0)/mine.length:null;
+  const reviews=mine.filter(x=>x.note).length;
+  const theirPosts=posts.filter(p=>own?(S.myIds.has(p.id)||p.by===uid):(p.by===uid&&p.status==='ok')).sort((a,b)=>b.pubAt-a.pubAt);
+  const pubCount=posts.filter(p=>p.by===uid&&p.status==='ok').length;
+  const chips=[r.admin?'<span class="chip admin">Админ</span>':'',r.expert?'<span class="chip expert">Знаток</span>':'',!r.admin&&!r.expert?'<span class="chip">Участник</span>':''].join('');
+  const since=+u.since?`<span class="legend" style="margin:0;align-self:center">в Комитете с ${fD.format(+u.since)}</span>`:'';
+  return `
+  ${own?'':'<button class="btn ghost" data-act="back" style="margin-bottom:10px">‹ Назад</button>'}
+  <div class="card">
+    <div class="prof-top">${avatarFor(u,uid,84)}<div><h2>${esc(realName(uid))}</h2><div class="chips">${chips}${since}</div></div></div>
+    ${u.bio?`<p class="bio">${esc(String(u.bio).slice(0,300))}</p>`:(own?'<p class="bio" style="color:var(--mute)">Расскажите о себе — нажмите «Редактировать».</p>':'')}
+    <div class="stats">
+      <div class="stat"><b>${mine.length}</b><span>${plural(mine.length,'оценка','оценки','оценок')}</span></div>
+      <div class="stat"><b style="color:${scoreColor(avg==null?null:Math.round(avg))}">${avg==null?'—':Math.round(avg)}</b><span>средний балл</span></div>
+      <div class="stat"><b>${reviews}</b><span>${plural(reviews,'рецензия','рецензии','рецензий')}</span></div>
+      <div class="stat"><b>${pubCount}</b><span>${plural(pubCount,'завоз','завоза','завозов')}</span></div>
+    </div>
+    ${avg!=null?`<div class="legend" style="margin:12px 0 0">Стиль оценки: <b style="color:var(--paper)">${styleOf(avg)}</b></div>`:''}
+    ${own?`<div class="actions"><button class="btn primary" data-act="editprof">Редактировать</button><button class="btn" data-act="copyid">Скопировать ID</button><button class="btn danger" data-act="logout">Выйти</button></div>`:''}
+  </div>
+  <h2 style="margin-top:22px">Последние оценки</h2>
+  ${mine.length?`<div class="card">${mine.slice(0,15).map(x=>`<div class="rrow"><div><h4>${esc(x.p.title)}</h4>${x.note?`<p>${esc(x.note.slice(0,300))}</p>`:''}</div><div class="n" style="color:${scoreColor(x.tot)}">${x.tot}</div></div>`).join('')}</div>`:'<div class="card legend" style="margin:0">Оценок пока нет.</div>'}
+  <h2 style="margin-top:22px">${own?'Ваши завозы':'Завозы'}</h2>
+  ${own?'<div class="legend">Анонимные завозы здесь видите только вы.</div>':''}
+  ${theirPosts.length?theirPosts.map(p=>card(p,scoreOf(p))).join(''):'<div class="card legend" style="margin:0">Пока ничего не предложено.</div>'}`;
+}
+async function fileToAvatar(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;});
+    const s=Math.min(img.naturalWidth,img.naturalHeight);
+    const c=document.createElement('canvas');c.width=c.height=256;
+    c.getContext('2d').drawImage(img,(img.naturalWidth-s)/2,(img.naturalHeight-s)/2,s,s,0,0,256,256);
+    let q=.85,d=c.toDataURL('image/jpeg',q);
+    while(d.length>110000&&q>.35){q-=.1;d=c.toDataURL('image/jpeg',q);}
+    return d;
+  }finally{URL.revokeObjectURL(url);}
+}
+function openEditProfile(){
+  const u=S.names[S.me.id]||{};
+  const d={name:String(u.name||''),bio:String(u.bio||''),avatar:okAvatar(u.avatar)?u.avatar:'',color:okColor(u.color)?u.color:hashColor(S.me.id)};
+  const gphoto=auth.currentUser&&auth.currentUser.photoURL;
+  const prev=()=>{$('#avPrev').innerHTML=avatarFor({...d,name:d.name||'?'},S.me.id,84);};
   openSheet(`
     <h3 style="padding:0">Профиль</h3>
+    <div class="avedit"><div id="avPrev"></div><div class="btns">
+      <label class="btn" for="avFile" style="display:inline-block">Загрузить фото</label>
+      <input type="file" id="avFile" accept="image/*" style="display:none">
+      ${gphoto&&okAvatar(gphoto)?'<button class="btn ghost" id="avG">Фото из Google</button>':''}
+      <button class="btn ghost" id="avDel">Без фото</button>
+    </div></div>
+    <label class="f">Цвет аватарки (если нет фото)</label>
+    <div class="sw" id="sw">${COLORS.map(c=>`<button data-c="${c}" style="background:${c}" class="${c===d.color?'on':''}" aria-label="цвет"></button>`).join('')}</div>
     <label class="f" for="pName">Имя в Комитете</label>
-    <input type="text" id="pName" maxlength="40" value="${esc(cur)}">
-    <label class="f">Ваш ID (нужен, чтобы назначить первого админа)</label>
-    <div class="urow" style="font-family:'JetBrains Mono',monospace;font-size:12px;word-break:break-all"><span id="pId">${esc(S.me.id)}</span><button class="btn" id="pCopy" style="padding:6px 10px">Копировать</button></div>
-    <div class="actions" style="justify-content:space-between">
-      <button class="btn danger" id="pOut">Выйти</button>
-      <span style="display:flex;gap:8px"><button class="btn ghost" id="pCancel">Закрыть</button><button class="btn primary" id="pSave">Сохранить</button></span>
-    </div>`);
+    <input type="text" id="pName" maxlength="40" value="${esc(d.name)}">
+    <label class="f" for="pBio">О себе</label>
+    <textarea id="pBio" maxlength="160" style="min-height:80px" placeholder="Например: слежу за рэп-сценой и абсурдом">${esc(d.bio)}</textarea>
+    <div class="cnt"><span id="bioCnt">${d.bio.length}</span>/160</div>
+    <div class="actions" style="justify-content:flex-end"><button class="btn ghost" id="pCancel">Отмена</button><button class="btn primary" id="pSave">Сохранить</button></div>`);
+  prev();
+  $('#avFile').onchange=async e=>{const f=e.target.files&&e.target.files[0];if(!f)return;try{d.avatar=await fileToAvatar(f);prev();}catch(err){toast('Не удалось открыть изображение');}};
+  if($('#avG'))$('#avG').onclick=()=>{d.avatar=gphoto;prev();};
+  $('#avDel').onclick=()=>{d.avatar='';prev();};
+  $('#sw').onclick=e=>{const b=e.target.closest('[data-c]');if(!b)return;d.color=b.dataset.c;$('#sw').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));prev();};
+  $('#pName').oninput=e=>{d.name=e.target.value;prev();};
+  $('#pBio').oninput=e=>{d.bio=e.target.value;$('#bioCnt').textContent=e.target.value.length;};
   $('#pCancel').onclick=closeSheet;
-  $('#pCopy').onclick=async()=>{try{await navigator.clipboard.writeText(S.me.id);toast('ID скопирован');}catch(e){toast('Выделите ID и скопируйте вручную');}};
-  $('#pOut').onclick=()=>{closeSheet();signOut(auth);};
   $('#pSave').onclick=async()=>{
-    const n=$('#pName').value.trim().slice(0,40);
+    const n=d.name.trim().slice(0,40);
     if(!n)return toast('Введите имя');
-    if(await run(()=>setDoc(doc(db,'users',S.me.id),{name:n,nameLower:n.toLowerCase()}),'Имя сохранено'))closeSheet();
+    $('#pSave').disabled=true;
+    const ok=await run(()=>setDoc(doc(db,'users',S.me.id),{name:n,nameLower:n.toLowerCase(),bio:d.bio.trim().slice(0,160),avatar:d.avatar,color:d.color},{merge:true}),'Профиль сохранён');
+    if(ok)closeSheet();else if($('#pSave'))$('#pSave').disabled=false;
   };
 }
 function openRate(pid){
@@ -520,8 +621,8 @@ function openRate(pid){
 }
 
 /* ---------- события ---------- */
-$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;S.tab=b.dataset.tab;S.dirty=false;document.activeElement&&document.activeElement.blur&&document.activeElement.blur();render();window.scrollTo(0,0);});
-$('#role').addEventListener('click',e=>{if(e.target.closest('#profileBtn'))openProfile();});
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;S.tab=b.dataset.tab;if(S.tab==='profile')S.profileId=S.me.id;S.dirty=false;document.activeElement&&document.activeElement.blur&&document.activeElement.blur();render();window.scrollTo(0,0);});
+$('#role').addEventListener('click',e=>{if(e.target.closest('#profileBtn')){S.prevTab=S.tab==='profile'?S.prevTab:S.tab;S.tab='profile';S.profileId=S.me.id;render();window.scrollTo(0,0);}});
 $('#view').addEventListener('click',async e=>{
   const s=e.target.closest('[data-sort]');if(s){S.sort=s.dataset.sort;return render();}
   const sc=e.target.closest('[data-scope]');if(sc){S.scope=sc.dataset.scope;return render();}
@@ -532,6 +633,11 @@ $('#view').addEventListener('click',async e=>{
   if(act==='authmode'){S.authMode=S.authMode==='up'?'in':'up';return render();}
   if(act==='reset'){const m=($('#aMail')||{}).value;if(!m)return toast('Введите почту в поле выше');return run(()=>sendPasswordResetEmail(auth,m.trim()),'Письмо для сброса пароля отправлено');}
   if(act==='rate')return openRate(id);
+  if(act==='profile'){if(S.tab!=='profile')S.prevTab=S.tab;S.tab='profile';S.profileId=id;render();window.scrollTo(0,0);return;}
+  if(act==='back'){S.tab=S.prevTab&&S.prevTab!=='profile'?S.prevTab:'feed';render();window.scrollTo(0,0);return;}
+  if(act==='editprof')return openEditProfile();
+  if(act==='logout')return signOut(auth);
+  if(act==='copyid'){try{await navigator.clipboard.writeText(S.me.id);toast('ID скопирован');}catch(err){toast('ID: '+S.me.id);}return;}
   if(act==='rev'){S.open.has(id)?S.open.delete(id):S.open.add(id);return render();}
   b.disabled=true;
   const now=Date.now();
@@ -643,7 +749,8 @@ if(configured){
       const snap=await getDoc(ref);
       const want=S.pendingName||(snap.exists()&&snap.data().name)||u.displayName||(u.email||'').split('@')[0]||'Участник';
       S.pendingName=null;
-      if(!snap.exists()||snap.data().name!==want)await setDoc(ref,{name:want.slice(0,40),nameLower:want.slice(0,40).toLowerCase()});
+      const cur=snap.exists()?snap.data():{};
+      if(!snap.exists()||cur.name!==want||!cur.since)await setDoc(ref,{name:want.slice(0,40),nameLower:want.slice(0,40).toLowerCase(),...(cur.since?{}:{since:Date.now()})},{merge:true});
     }catch(e){console.error(e);}
     startData();
   });
