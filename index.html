@@ -187,6 +187,11 @@ input[type=range]{width:100%;accent-color:var(--gold);height:28px}
 .ring.dia>*{animation:spin 6s linear infinite reverse}
 .ring>.av{box-shadow:0 0 0 1.5px #fffdf8}
 .urow .btn{white-space:nowrap}
+.urow{flex-wrap:wrap}
+.urow .ulink{min-width:0;flex:1 1 auto}
+.rbtns{display:flex;gap:6px;margin-left:auto}
+.rbtns .btn{padding:7px 10px;font-size:12.5px;justify-content:center}
+@media (max-width:560px){.rbtns{width:100%}.rbtns .btn{flex:1}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.ring.dia,.ring.dia>*,.chip.gossip{animation:none}}
 .prog-card .pgh{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--mute);margin-bottom:8px;flex-wrap:wrap}
@@ -280,6 +285,16 @@ body.inchat header{display:none}
 #recTime{font-weight:800;min-width:38px}
 .recwave{flex:1;display:flex;align-items:center;gap:2px;height:30px;overflow:hidden}
 .recwave i{flex:1;max-width:5px;min-width:2px;background:var(--gold);border-radius:2px}
+
+.sheet{top:var(--vvt,0);bottom:auto;height:var(--vvh,100vh)}
+.sheet .box{max-height:calc(var(--vvh,100vh) - 16px)}
+html.inchat,body.inchat{overflow:hidden;height:100%;overscroll-behavior:none}
+body.inchat #chatRoom{position:fixed;left:0;right:0;top:var(--vvt,0);height:var(--vvh,100vh);min-height:0;max-width:720px;margin:0 auto;z-index:6;display:flex;flex-direction:column}
+body.inchat .chead{position:static;margin:0;flex:none;padding:calc(8px + env(safe-area-inset-top)) 10px 8px}
+body.inchat .msgs{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:12px 12px 8px}
+body.inchat .composer{position:static;margin:0;flex:none}
+.msgerr{text-align:center;color:var(--mute);padding:30px 16px}
+.msgerr b{display:block;color:var(--paper);margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -490,7 +505,7 @@ function renderRole(){
   $('#role').innerHTML=`<button class="chip ${c}" id="profileBtn" style="cursor:pointer;background:rgba(255,255,255,.04);color:inherit;display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 4px">${avatarHtml(S.me.id,24)}${esc(t)}</button>`;
 }
 function render(){
-  document.body.classList.toggle('inchat',!!S.user&&S.tab==='chat');
+  document.body.classList.toggle('inchat',!!S.user&&S.tab==='chat');document.documentElement.classList.toggle('inchat',!!S.user&&S.tab==='chat');
   if(S.user&&S.tab==='chat'&&S.chats[S.chatId]&&$('#chatRoom')&&$('#chatRoom').dataset.cid===S.chatId){renderTabs();patchChat();return;}
   const a=document.activeElement;
   if(a&&$('#view').contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.type!=='checkbox'){S.dirty=true;renderTabs();renderRole();return;}
@@ -658,9 +673,9 @@ function viewAdmin(){
 }
 function usersHtml(users){
   if(!users.length)return '<div class="legend">Никого не найдено. Участник появится здесь после первого входа.</div>';
-  return users.map(u=>`<div class="urow">${ulink(u.id,28)}<span style="display:flex;gap:6px">
+  return users.map(u=>`<div class="urow">${ulink(u.id,28)}<span class="rbtns">
     <button class="btn ${u.r.expert||u.r.gossip?'ok':''}" style="padding:6px 9px" data-act="toggleExpert" data-id="${esc(u.id)}">${u.r.expert||u.r.gossip?'✓ Знаток':'Знаток'}</button>
-    <button class="btn ${u.r.gossip?'ok':''}" style="padding:6px 9px" data-act="toggleGossip" data-id="${esc(u.id)}">${u.r.gossip?'✓ 💎':'💎'}</button>
+    <button class="btn ${u.r.gossip?'ok':''}" style="padding:6px 9px" data-act="toggleGossip" data-id="${esc(u.id)}">${u.r.gossip?'✓ Сплетник':'💎 Сплетник'}</button>
     ${u.id===S.me.id?'':`<button class="btn ${u.r.admin?'ok':''}" style="padding:6px 10px" data-act="toggleAdmin" data-id="${esc(u.id)}">${u.r.admin?'✓ Админ':'Админ'}</button>`}
   </span></div>`).join('');
 }
@@ -1152,14 +1167,15 @@ function syncChatSub(){
 }
 function openMsgs(cid){
   if(msgsCid===cid)return;
-  closeMsgs();msgsCid=cid;S.msgs=[];S.msgsLoaded=false;
+  closeMsgs();msgsCid=cid;S.msgs=[];S.msgsLoaded=false;S.msgsErr='';S.msgsSlow=false;
+  clearTimeout(S.msgsT);S.msgsT=setTimeout(()=>{if(msgsCid===cid&&!S.msgsLoaded){S.msgsSlow=true;patchChat();}},10000);
   msgsUnsub=onSnapshot(query(collection(db,'chats',cid,'msgs'),orderBy('at','desc'),limit(200)),s=>{
-    const arr=[];s.forEach(d=>arr.push({...d.data(),id:d.id}));arr.reverse();S.msgs=arr;S.msgsLoaded=true;
+    const arr=[];s.forEach(d=>arr.push({...d.data(),id:d.id}));arr.reverse();S.msgs=arr;S.msgsLoaded=true;S.msgsErr='';S.msgsSlow=false;clearTimeout(S.msgsT);
     const last=arr.length?arr[arr.length-1].at:0;if(S.tab==='chat'&&S.chatId===cid&&last)setReadMark(cid,Math.max(last,+((S.chats[cid]||{}).lastAt)||0));
     patchChat();renderTabs();
-  },e=>{console.error(e);toast(errText(e));});
+  },e=>{console.error(e);clearTimeout(S.msgsT);msgsUnsub=null;msgsCid=null;S.msgsErr=errText(e);patchChat();});
 }
-function closeMsgs(){if(msgsUnsub)msgsUnsub();msgsUnsub=null;msgsCid=null;S.msgs=[];}
+function closeMsgs(){if(msgsUnsub)msgsUnsub();msgsUnsub=null;msgsCid=null;S.msgs=[];S.msgsLoaded=false;S.msgsErr='';clearTimeout(S.msgsT);}
 function stopChats(){if(chatsUnsub)chatsUnsub();chatsUnsub=null;closeMsgs();S.chats={};stopVoice();cancelRec();}
 
 /* ---- список чатов ---- */
@@ -1248,14 +1264,15 @@ function patchChat(){
   $('#chTitle').textContent=c.title||'';
   $('#chSub').textContent=`${(c.members||[]).length} ${plural((c.members||[]).length,'участник','участника','участников')}`;
   const box=$('#msgs');
-  const nearBottom=(innerHeight+scrollY)>=(document.documentElement.scrollHeight-160);
+  const nearBottom=box.scrollTop+box.clientHeight>=box.scrollHeight-160;
   let html='',pd='';
-  if(!S.msgsLoaded)html='<div class="empty"><b>Загружаем сообщения…</b></div>';
+  if(S.msgsErr)html=`<div class="msgerr"><b>Не удалось загрузить сообщения</b>${esc(S.msgsErr)}<div class="actions" style="justify-content:center"><button class="btn primary" id="msgRetry">Повторить</button></div></div>`;
+  else if(!S.msgsLoaded)html=`<div class="empty"><b>Загружаем сообщения…</b>${S.msgsSlow?'Медленная связь — подождите ещё немного.':''}</div>`;
   else if(!S.msgs.length)html='<div class="empty"><b>Здесь пока тихо</b>Перешлите завоз из ленты кнопкой «В чат» или напишите первым.</div>';
   S.msgs.forEach((m,i)=>{const d=dayKey(m.at);if(d!==pd){html+=`<div class="daysep"><span>${dayLabel(m.at)}</span></div>`;pd=d;}html+=msgHtml(m,i?S.msgs[i-1]:null);});
   box.innerHTML=html;
   if(curAudio){const el=box.querySelector(`[data-vid="${CSS.escape(curAudio.mid)}"]`);if(el){el.classList.toggle('playing',!curAudio.a.paused);const d=curAudio.a.duration;if(d&&isFinite(d))setVProg(curAudio.mid,curAudio.a.currentTime/d);}}
-  if(nearBottom||S.forceBottom){S.forceBottom=false;requestAnimationFrame(()=>window.scrollTo(0,document.documentElement.scrollHeight));}
+  if(nearBottom||S.forceBottom){S.forceBottom=false;box.scrollTop=box.scrollHeight;requestAnimationFrame(()=>{box.scrollTop=box.scrollHeight;});}
 }
 function viewChatRoom(){
   const c=S.chats[S.chatId];
@@ -1425,11 +1442,22 @@ $('#view').addEventListener('change',e=>{if(e.target.id==='cImg'){const f=e.targ
 $('#view').addEventListener('click',e=>{
   const t=e.target;
   if(t.closest('#cSend')){e.preventDefault();const b=$('#cSend');if(b.dataset.mode==='send')sendText();else startRec();return;}
-  if(t.closest('#cStk')){S.stkOpen=!S.stkOpen;$('#stkPanel').classList.toggle('hidden',!S.stkOpen);if(S.stkOpen)requestAnimationFrame(()=>window.scrollTo(0,document.documentElement.scrollHeight));return;}
+  if(t.closest('#cStk')){S.stkOpen=!S.stkOpen;$('#stkPanel').classList.toggle('hidden',!S.stkOpen);if(S.stkOpen)requestAnimationFrame(()=>{const b=$('#msgs');if(b)b.scrollTop=b.scrollHeight;});return;}
   const sk=t.closest('[data-stk]');if(sk){sendMsg({kind:'sticker',sticker:sk.dataset.stk});return;}
+  if(t.closest('#msgRetry')){S.msgsErr='';openMsgs(S.chatId);patchChat();return;}
   if(t.closest('#recCancel')){cancelRec();return;}
   if(t.closest('#recSend')){stopRec(true);return;}
 });
+
+/* ---------- видимая область над клавиатурой (iOS) ---------- */
+function syncVV(){
+  const vv=window.visualViewport;const hgt=vv?vv.height:innerHeight;const top=vv?vv.offsetTop:0;
+  const r=document.documentElement.style;r.setProperty('--vvh',hgt+'px');r.setProperty('--vvt',top+'px');
+  if(document.body.classList.contains('inchat')){const box=$('#msgs');if(box&&document.activeElement&&document.activeElement.id==='cText')box.scrollTop=box.scrollHeight;}
+}
+if(window.visualViewport){visualViewport.addEventListener('resize',syncVV);visualViewport.addEventListener('scroll',syncVV);}
+addEventListener('resize',syncVV);syncVV();
+document.addEventListener('focusin',e=>{const t=e.target;if(!t||!/^(INPUT|TEXTAREA)$/.test(t.tagName))return;if(t.id==='cText'){const sb=()=>{const b=$('#msgs');if(b)b.scrollTop=b.scrollHeight;};setTimeout(sb,150);setTimeout(sb,450);return;}if(t.closest('.sheet .box'))setTimeout(()=>{try{t.scrollIntoView({block:'center',behavior:'smooth'});}catch(x){}},300);});
 
 /* ---------- WebGL-фон ---------- */
 function startGL(){
