@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Комитет Завозов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0d11; --paper:#f2ede3; --mute:#9a958c; --line:rgba(255,255,255,.09);
+  --card:rgba(20,20,26,.80); --card2:rgba(30,30,38,.9);
+  --red:#ff4a2b; --gold:#f2c14e; --green:#5ed39a; --amber:#f59e3b; --vio:#8b6cff;
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--ink);color:var(--paper);font-family:Manrope,system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;background:radial-gradient(120% 80% at 80% 0%,#3a1610 0%,transparent 55%),radial-gradient(90% 70% at 0% 100%,#1d1540 0%,transparent 60%),var(--ink)}
+.app{position:relative;z-index:1;max-width:720px;margin:0 auto;min-height:100vh;padding:0 14px calc(92px + env(safe-area-inset-bottom))}
+header{padding:calc(18px + env(safe-area-inset-top)) 2px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-family:Unbounded,sans-serif;font-weight:900;font-size:19px;letter-spacing:.02em;line-height:1.05;text-transform:uppercase}
+.logo span{color:var(--red)}
+.logo small{display:block;font-family:Manrope,system-ui,sans-serif;font-weight:600;font-size:11px;letter-spacing:.14em;color:var(--mute);margin-top:4px}
+.chip{max-width:48vw;overflow:hidden;text-overflow:ellipsis;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.04);white-space:nowrap}
+.chip.admin{border-color:rgba(255,74,43,.5);color:#ff8b74}
+.chip.expert{border-color:rgba(242,193,78,.5);color:var(--gold)}
+.banner{background:rgba(139,108,255,.12);border:1px solid rgba(139,108,255,.35);border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:12px;color:#d9d0ff}
+.banner.warn{background:rgba(245,158,59,.1);border-color:rgba(245,158,59,.35);color:#ffd8a8}
+h2{font-family:Unbounded,sans-serif;font-weight:700;font-size:20px;margin:6px 2px 12px}
+.sub-h{color:var(--mute);font-size:13px;margin:-6px 2px 14px}
+.seg{display:inline-flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--mute);font:600 13px Manrope,system-ui,sans-serif;padding:7px 12px;border-radius:99px;cursor:pointer}
+.seg button.on{background:var(--paper);color:var(--ink)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.card{background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;position:relative}
+.meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12px;color:var(--mute);margin-bottom:8px;padding-right:86px}
+.tag{color:var(--paper);background:rgba(255,255,255,.07);padding:2px 8px;border-radius:6px;font-weight:600}
+.badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em}
+.badge.pending{background:rgba(245,158,59,.15);color:var(--amber)}
+.badge.no{background:rgba(255,74,43,.15);color:#ff8b74}
+.card h3{font-family:Unbounded,sans-serif;font-weight:500;font-size:16px;line-height:1.3;margin-bottom:6px;padding-right:86px;word-wrap:break-word}
+.card p.txt{color:#d8d3c9;white-space:pre-wrap;word-wrap:break-word;font-size:14px}
+.card a.src{display:inline-block;margin-top:8px;color:#b9a8ff;font-size:13px;word-break:break-all}
+.stamp{position:absolute;top:14px;right:14px;width:72px;height:72px;border-radius:50%;border:3px solid currentColor;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-8deg);font-family:"JetBrains Mono",monospace;opacity:.95}
+.stamp b{font-size:24px;line-height:1;font-weight:700}
+.stamp i{font-style:normal;font-size:8px;letter-spacing:.12em;text-transform:uppercase;margin-top:3px;font-family:Manrope,system-ui,sans-serif;font-weight:700}
+.stamp.none{color:#5c5850;border-style:dashed}
+.split{display:flex;gap:14px;margin-top:12px;font-size:12px;color:var(--mute);flex-wrap:wrap}
+.split b{font-family:"JetBrains Mono",monospace;color:var(--paper);font-size:14px;margin-right:3px}
+.crit{display:grid;grid-template-columns:1fr;gap:5px;margin-top:12px}
+.crow{display:grid;grid-template-columns:118px 1fr 34px;align-items:center;gap:8px;font-size:12px;color:var(--mute)}
+.bar{height:6px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}
+.bar>div{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--vio),var(--red))}
+.crow .v{font-family:"JetBrains Mono",monospace;color:var(--paper);text-align:right}
+.actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--paper);font:600 13px Manrope,system-ui,sans-serif;padding:9px 14px;border-radius:10px;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.1)}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.ok{border-color:rgba(94,211,154,.5);color:var(--green)}
+.btn.danger{border-color:rgba(255,74,43,.45);color:#ff8b74;background:transparent}
+.btn:disabled{opacity:.45;cursor:default}
+.reviews{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:10px}
+.rv{font-size:13px}
+.rv .who{font-weight:700;font-size:12px;margin-bottom:2px;display:flex;gap:8px;align-items:center}
+.rv .who .n{font-family:"JetBrains Mono",monospace;color:var(--gold)}
+.rv p{color:#d8d3c9;white-space:pre-wrap;word-wrap:break-word}
+.empty{text-align:center;color:var(--mute);padding:40px 16px}
+.empty b{display:block;font-family:Unbounded,system-ui,sans-serif;color:var(--paper);font-size:16px;margin-bottom:6px;font-weight:500}
+/* rating */
+.weeknav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.weeknav .lbl{font-family:Unbounded,system-ui,sans-serif;font-size:15px;text-align:center}
+.weeknav .lbl small{display:block;font-family:Manrope,system-ui,sans-serif;font-size:12px;color:var(--mute);margin-top:2px}
+.rk{display:grid;grid-template-columns:44px 1fr 64px;gap:12px;align-items:center}
+.rk .pos{font-family:Unbounded,system-ui,sans-serif;font-weight:900;font-size:22px;color:#5c5850;text-align:center}
+.rk.p1 .pos{color:var(--gold)} .rk.p2 .pos{color:#cfd3dc} .rk.p3 .pos{color:#d98c5f}
+.rk h4{font-family:Unbounded,system-ui,sans-serif;font-weight:500;font-size:14px;line-height:1.3;word-wrap:break-word}
+.rk .m{font-size:12px;color:var(--mute);margin-top:3px}
+.rk .sc{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:700;font-size:24px;text-align:right}
+.card.top{border-color:rgba(242,193,78,.35);background:linear-gradient(135deg,rgba(242,193,78,.08),var(--card) 50%)}
+/* form */
+label.f{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:14px 0 6px}
+input[type=text],input[type=url],input[type=search],input[type=email],input[type=password],textarea,select{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:10px;color:var(--paper);font:500 15px Manrope,system-ui,sans-serif,system-ui,sans-serif;padding:11px 12px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:rgba(255,74,43,.6)}
+textarea{min-height:120px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:16px;font-size:14px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--red);margin-top:1px}
+.check small{display:block;color:var(--mute);font-size:12px}
+.cnt{font-size:11px;color:var(--mute);text-align:right;margin-top:4px}
+/* tabs */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(13,13,17,.92) 30%)}
+nav.tabs .in{display:flex;gap:4px;background:rgba(24,24,30,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;padding:5px;max-width:520px;width:100%}
+nav.tabs button{flex:1;border:0;background:transparent;color:var(--mute);font:700 11px Manrope,system-ui,sans-serif;padding:8px 4px;border-radius:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+nav.tabs button svg{width:20px;height:20px}
+nav.tabs button.on{background:rgba(255,255,255,.08);color:var(--paper)}
+nav.tabs .dot{position:absolute;top:5px;right:calc(50% - 18px);min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#fff;font-size:10px;line-height:16px;padding:0 4px}
+/* sheet */
+.sheet{position:fixed;inset:0;z-index:10;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}
+.sheet.hidden{display:none}
+.sheet .box{background:#16161c;border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:620px;max-height:92vh;overflow:auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+@media(min-width:700px){.sheet{align-items:center}.sheet .box{border-radius:22px}}
+.sheet h3{font-family:Unbounded,system-ui,sans-serif;font-weight:500;font-size:16px;line-height:1.3;margin-bottom:4px;padding-right:90px;word-wrap:break-word}
+.total{position:absolute;right:18px;top:18px;font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:700;font-size:38px;line-height:1}
+.total small{display:block;font-size:10px;text-align:right;color:var(--mute);font-family:Manrope,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.sl{margin-top:16px}
+.sl .t{display:flex;justify-content:space-between;align-items:baseline}
+.sl .t b{font-size:14px}
+.sl .t span{font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:700;font-size:16px}
+.sl .d{font-size:12px;color:var(--mute);margin:1px 0 6px}
+input[type=range]{width:100%;accent-color:var(--red);height:28px}
+.row{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.ulist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.urow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.04);border-radius:10px;font-size:14px}
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;background:var(--paper);color:var(--ink);font-weight:600;font-size:14px;padding:10px 16px;border-radius:12px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+.legend{font-size:12px;color:var(--mute);margin:4px 2px 14px;line-height:1.5}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="app">
+  <header>
+    <div class="logo">Комитет <span>Завозов</span><small>оценка инфоповодов · 100 баллов</small></div>
+    <div id="role"></div>
+  </header>
+  <div id="notice"></div>
+  <main id="view"></main>
+</div>
+<nav class="tabs"><div class="in" id="tabs"></div></nav>
+<div id="sheet" class="sheet hidden"><div class="box" id="sheetBox"></div></div>
+<div id="toast"></div>
+<script type="module">
+/* =====================================================================
+   1. ВСТАВЬТЕ СЮДА КОНФИГ ВАШЕГО ПРОЕКТА FIREBASE
+   (Консоль Firebase → ⚙ Настройки проекта → Ваши приложения → Web → Config)
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyASg8B5YV53-3DjjJryCBG-MfGt0fepCFc",
+  authDomain: "committee-zavozov.firebaseapp.com",
+  projectId: "committee-zavozov",
+  storageBucket: "committee-zavozov.firebasestorage.app",
+  messagingSenderId: "693132586536",
+  appId: "1:693132586536:web:fb800d3ed2e1a21fc18f1d"
+};
+/* ===================================================================== */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, query, where, onSnapshot, setDoc, updateDoc, deleteDoc,
+  getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ---------- константы ---------- */
+const CRIT = [
+  {k:'Актуальность',  d:'Своевременность и попадание в текущую повестку'},
+  {k:'Масштаб',       d:'Значимость события, охват и последствия'},
+  {k:'Интерес',       d:'Желание обсуждать и следить за развитием'},
+  {k:'Неординарность',d:'Насколько необычно, неожиданно или абсурдно'},
+  {k:'Потенциал',     d:'Как долго будет актуален и обрастать подробностями'}
+];
+const MAX = 20;          // баллов за критерий, 5 × 20 = 100
+const W_EXP = 0.6;       // вес знатоков в итоговой оценке (народ — 0.4)
+const TAGS = ['Политика','Шоубиз','Музыка','Спорт','Интернет','Технологии','Город','Абсурд','Другое'];
+const MSK = 3*3600e3, DAY = 864e5;
+
+const S = {
+  user:null, me:{id:null, admin:false, expert:false}, authReady:false,
+  okPosts:{}, adminPosts:{}, myPosts:{}, myIds:new Set(), authors:{}, ratings:{}, roles:{}, names:{},
+  loaded:{posts:false, ratings:false},
+  tab:'feed', sort:'new', scope:'week', weekOffset:0,
+  open:new Set(), draft:{title:'',text:'',link:'',tag:TAGS[0],anon:false},
+  q:'', notice:'', dirty:false, authMode:'in'
+};
+
+/* ---------- утилиты ---------- */
+const $ = s => document.querySelector(s);
+const esc = v => String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fD = new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Moscow',day:'numeric',month:'short'});
+const fDT = new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Moscow',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+function weekStart(t){const d=new Date(t+MSK);const dow=(d.getUTCDay()+6)%7;d.setUTCHours(0,0,0,0);return d.getTime()-dow*DAY-MSK;}
+function safeUrl(u){try{const x=new URL(String(u));return /^https?:$/.test(x.protocol)?x.href:null;}catch(e){return null;}}
+function scoreColor(v){if(v==null)return '#5c5850';if(v>=85)return 'var(--gold)';if(v>=70)return 'var(--green)';if(v>=45)return 'var(--amber)';return 'var(--red)';}
+const fmt1 = v => v==null?'—':String(Math.round(v));
+let toastT; function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3000);}
+function plural(n,a,b,c){n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return c;if(n1>1&&n1<5)return b;if(n1===1)return a;return c;}
+const nameOf = id => id===S.me.id?'Вы':((S.names[id]&&S.names[id].name)||'Участник');
+
+/* ---------- Firebase ---------- */
+const configured = !String(firebaseConfig.apiKey).includes('ВСТАВЬТЕ');
+let app, auth, db;
+if (configured) { app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); }
+
+function errText(e){
+  const c=(e&&e.code)||'';
+  const m={
+    'permission-denied':'Нет прав на это действие.',
+    'auth/invalid-credential':'Неверная почта или пароль.',
+    'auth/wrong-password':'Неверная почта или пароль.',
+    'auth/user-not-found':'Такого пользователя нет.',
+    'auth/email-already-in-use':'Эта почта уже зарегистрирована — войдите.',
+    'auth/weak-password':'Пароль слишком простой (минимум 6 символов).',
+    'auth/invalid-email':'Некорректная почта.',
+    'auth/popup-closed-by-user':'Окно входа закрыто.',
+    'auth/popup-blocked':'Браузер заблокировал окно входа — разрешите всплывающие окна.',
+    'auth/unauthorized-domain':'Этот домен не добавлен в Firebase → Authentication → Settings → Authorized domains.',
+    'auth/operation-not-allowed':'Этот способ входа не включён в Firebase → Authentication.',
+    'unavailable':'Нет связи с сервером.'
+  };
+  return m[c]||('Ошибка: '+(c||'неизвестная'));
+}
+async function run(fn,okMsg){try{await fn();if(okMsg)toast(okMsg);return true;}catch(e){console.error(e);toast(errText(e));return false;}}
+
+/* ---------- подписки ---------- */
+let unsubs=[], adminUnsubs=[], myUnsubs={};
+function stopAll(){unsubs.forEach(u=>u());adminUnsubs.forEach(u=>u());Object.values(myUnsubs).forEach(u=>u());unsubs=[];adminUnsubs=[];myUnsubs={};}
+const mapSnap = snap => {const m={};snap.forEach(d=>m[d.id]=d.data());return m;};
+function startData(){
+  const uid=S.me.id;
+  const onErr=e=>{console.error(e);S.notice=`<div class="banner warn">${esc(errText(e))} Проверьте, что правила Firestore опубликованы.</div>`;render();};
+  unsubs.push(onSnapshot(collection(db,'users'),s=>{S.names=mapSnap(s);render();},onErr));
+  unsubs.push(onSnapshot(collection(db,'roles'),s=>{
+    S.roles=mapSnap(s);
+    const r=S.roles[uid]||{};
+    const wasAdmin=S.me.admin;
+    S.me.admin=r.admin===true;S.me.expert=r.expert===true;
+    if(S.me.admin&&!wasAdmin)startAdmin();
+    if(!S.me.admin&&wasAdmin){adminUnsubs.forEach(u=>u());adminUnsubs=[];S.adminPosts={};S.authors={};if(S.tab==='admin')S.tab='feed';}
+    render();
+  },onErr));
+  unsubs.push(onSnapshot(collection(db,'ratings'),s=>{S.ratings=mapSnap(s);S.loaded.ratings=true;render();},onErr));
+  unsubs.push(onSnapshot(query(collection(db,'posts'),where('status','==','ok')),s=>{S.okPosts=mapSnap(s);S.loaded.posts=true;render();},onErr));
+  unsubs.push(onSnapshot(query(collection(db,'postAuthors'),where('uid','==',uid)),s=>{
+    const ids=new Set();s.forEach(d=>ids.add(d.id));S.myIds=ids;
+    for(const id of Object.keys(myUnsubs))if(!ids.has(id)){myUnsubs[id]();delete myUnsubs[id];delete S.myPosts[id];}
+    for(const id of ids)if(!myUnsubs[id])myUnsubs[id]=onSnapshot(doc(db,'posts',id),d=>{
+      if(d.exists())S.myPosts[id]=d.data();else delete S.myPosts[id];render();
+    },()=>{delete S.myPosts[id];render();});
+    render();
+  },onErr));
+}
+function startAdmin(){
+  const onErr=e=>console.error(e);
+  adminUnsubs.push(onSnapshot(collection(db,'posts'),s=>{S.adminPosts=mapSnap(s);render();},onErr));
+  adminUnsubs.push(onSnapshot(collection(db,'postAuthors'),s=>{const m={};s.forEach(d=>m[d.id]=d.data().uid);S.authors=m;render();},onErr));
+}
+
+/* ---------- данные ---------- */
+function allPosts(){
+  const merged={...S.myPosts,...S.okPosts,...S.adminPosts};
+  const out=[];
+  for(const[id,it]of Object.entries(merged)){
+    if(!it||typeof it.title!=='string')continue;
+    const status=['ok','no','pending'].includes(it.status)?it.status:'pending';
+    out.push({id,title:it.title.slice(0,160),text:String(it.text||'').slice(0,2000),link:it.link,tag:String(it.tag||'Другое').slice(0,30),
+      anon:!!it.anon,by:it.by||null,author:S.authors[id]||it.by||(S.myIds.has(id)?S.me.id:null),
+      createdAt:+it.createdAt||0,status,pubAt:+it.pubAt||+it.createdAt||0});
+  }
+  return out;
+}
+function scoreOf(p){
+  const E=[],P=[],crit=[0,0,0,0,0];let n=0,mine=null;const reviews=[];
+  for(const r of Object.values(S.ratings)){
+    if(!r||r.pid!==p.id||!Array.isArray(r.s)||r.s.length!==5||(p.author&&r.uid===p.author))continue;
+    const s=r.s.map(v=>Math.max(0,Math.min(MAX,Math.round(+v||0))));
+    const tot=s.reduce((a,b)=>a+b,0);
+    const exp=!!(S.roles[r.uid]&&S.roles[r.uid].expert);
+    if(r.uid===S.me.id)mine={s,note:String(r.note||''),tot};
+    (exp?E:P).push(tot);s.forEach((v,i)=>crit[i]+=v);n++;
+    const note=String(r.note||'').trim();
+    if(note)reviews.push({u:r.uid,note:note.slice(0,1500),tot,exp,at:+r.at||0});
+  }
+  const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const e=avg(E),pp=avg(P);
+  const fin=e!=null&&pp!=null?W_EXP*e+(1-W_EXP)*pp:(e!=null?e:pp);
+  reviews.sort((a,b)=>(b.exp-a.exp)||(b.at-a.at));
+  return {e,p:pp,ne:E.length,np:P.length,n,fin:fin==null?null:Math.round(fin),crit:n?crit.map(c=>c/n):null,reviews,mine};
+}
+
+/* ---------- рендер ---------- */
+const ICON={
+  feed:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  rating:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3"/></svg>',
+  add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+  admin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>'
+};
+function renderTabs(){
+  const nav=document.querySelector('nav.tabs');
+  if(!S.user){nav.style.display='none';return;}
+  nav.style.display='';
+  const pend=S.me.admin?allPosts().filter(p=>p.status==='pending').length:0;
+  const tabs=[['feed','Лента'],['rating','Рейтинг'],['add','Предложить']];
+  if(S.me.admin)tabs.push(['admin','Комитет']);
+  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-tab="${k}" class="${S.tab===k?'on':''}">${ICON[k]}${l}${k==='admin'&&pend?`<span class="dot">${pend}</span>`:''}</button>`).join('');
+}
+function renderRole(){
+  if(!S.user){$('#role').innerHTML='';return;}
+  let c='',t='Участник';
+  if(S.me.admin){c='admin';t='Админ';}
+  else if(S.me.expert){c='expert';t='Знаток';}
+  $('#role').innerHTML=`<button class="chip ${c}" id="profileBtn" style="cursor:pointer;background:rgba(255,255,255,.04);color:inherit">${esc(t)} · ${esc(nameOf(S.me.id)==='Вы'?((S.names[S.me.id]&&S.names[S.me.id].name)||'профиль'):'профиль')}</button>`;
+}
+function render(){
+  const a=document.activeElement;
+  if(a&&$('#view').contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.type!=='checkbox'){S.dirty=true;renderTabs();renderRole();return;}
+  renderTabs();renderRole();
+  $('#notice').innerHTML=S.notice;
+  const v=$('#view');
+  if(!configured){v.innerHTML=viewSetup();return;}
+  if(!S.authReady){v.innerHTML='<div class="empty"><b>Загрузка…</b></div>';return;}
+  if(!S.user){v.innerHTML=viewLogin();return;}
+  if(S.tab==='rating')v.innerHTML=viewRating();
+  else if(S.tab==='add')v.innerHTML=viewAdd();
+  else if(S.tab==='admin'&&S.me.admin)v.innerHTML=viewAdmin();
+  else{S.tab='feed';v.innerHTML=viewFeed();}
+}
+function viewSetup(){
+  return `<div class="card"><h3 style="padding:0">Почти готово</h3><p class="txt" style="margin-top:8px">Откройте файл <b>index.html</b> и вставьте конфиг своего проекта Firebase в блок <b>firebaseConfig</b> в начале скрипта. Подробности — в README.md.</p></div>`;
+}
+function viewLogin(){
+  const up=S.authMode==='up';
+  return `
+  <div class="card" style="margin-top:20px">
+    <h3 style="padding:0;font-size:20px">Добро пожаловать в Комитет</h3>
+    <p class="txt" style="margin:8px 0 16px">Предлагайте «завозы», оценивайте их по 5 критериям и следите за рейтингом недели.</p>
+    <button class="btn primary" data-act="google" style="width:100%;padding:13px">Войти через Google</button>
+    <div class="legend" style="text-align:center;margin:16px 0 4px">или по почте</div>
+    <form id="mailForm">
+      ${up?'<label class="f" for="aName">Имя в Комитете</label><input type="text" id="aName" maxlength="40" required>':''}
+      <label class="f" for="aMail">Почта</label><input type="email" autocomplete="email" id="aMail" required>
+      <label class="f" for="aPass">Пароль</label><input type="password" minlength="6" autocomplete="${up?'new-password':'current-password'}" id="aPass" required>
+      <div class="actions"><button class="btn primary" type="submit" style="flex:1">${up?'Зарегистрироваться':'Войти'}</button></div>
+    </form>
+    <div class="actions" style="justify-content:space-between">
+      <button class="btn ghost" data-act="authmode">${up?'Уже есть аккаунт? Войти':'Нет аккаунта? Регистрация'}</button>
+      ${up?'':'<button class="btn ghost" data-act="reset">Забыли пароль?</button>'}
+    </div>
+  </div>`;
+}
+function authorHtml(p){
+  if(p.anon)return S.me.admin&&S.tab==='admin'&&p.author?`Аноним (${esc(nameOf(p.author))})`:'Аноним';
+  return esc(p.by?nameOf(p.by):'Участник');
+}
+function stamp(v,label){
+  if(v==null)return `<div class="stamp none"><b>—</b><i>${label||'нет оценок'}</i></div>`;
+  return `<div class="stamp" style="color:${scoreColor(v)}"><b>${v}</b><i>${label||'итог'}</i></div>`;
+}
+function critHtml(c){
+  if(!c)return '';
+  return `<div class="crit">${CRIT.map((k,i)=>`<div class="crow"><span>${k.k}</span><div class="bar"><div style="width:${(c[i]/MAX*100).toFixed(1)}%"></div></div><span class="v">${c[i].toFixed(1)}</span></div>`).join('')}</div>`;
+}
+function card(p,sc,extra){
+  const link=safeUrl(p.link);
+  const own=S.myIds.has(p.id)||p.by===S.me.id;
+  const canRate=p.status==='ok'&&!own;
+  const open=S.open.has(p.id);
+  let acts='';
+  if(canRate)acts+=`<button class="btn ${sc.mine?'':'primary'}" data-act="rate" data-id="${esc(p.id)}">${sc.mine?`Ваша оценка: ${sc.mine.tot} · изменить`:'Оценить'}</button>`;
+  if(own&&p.status==='ok')acts+=`<span class="legend" style="margin:0;align-self:center">Свой завоз оценивать нельзя</span>`;
+  if(sc.reviews.length)acts+=`<button class="btn ghost" data-act="rev" data-id="${esc(p.id)}">${open?'Скрыть':'Рецензии'} (${sc.reviews.length})</button>`;
+  if(S.me.admin&&p.status==='ok')acts+=`<button class="btn danger" data-act="unpub" data-id="${esc(p.id)}">Снять</button>`;
+  if(own&&p.status!=='ok')acts+=`<button class="btn danger" data-act="del" data-id="${esc(p.id)}">Удалить</button>`;
+  if(extra)acts+=extra;
+  const st=p.status==='pending'?'<span class="badge pending">На модерации</span>':p.status==='no'?'<span class="badge no">Отклонён</span>':'';
+  return `<article class="card">
+    ${p.status==='ok'?stamp(sc.fin):''}
+    <div class="meta"><span class="tag">#${esc(p.tag)}</span><span>${fDT.format(p.pubAt||p.createdAt)}</span><span>${authorHtml(p)}</span>${st}</div>
+    <h3>${esc(p.title)}</h3>
+    ${p.text?`<p class="txt">${esc(p.text)}</p>`:''}
+    ${link?`<a class="src" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Источник ↗</a>`:''}
+    ${p.status==='ok'&&sc.n?`<div class="split"><span><b style="color:var(--gold)">${fmt1(sc.e)}</b>знатоки · ${sc.ne}</span><span><b>${fmt1(sc.p)}</b>народ · ${sc.np}</span></div>${critHtml(sc.crit)}`:''}
+    ${acts?`<div class="actions">${acts}</div>`:''}
+    ${open&&sc.reviews.length?`<div class="reviews">${sc.reviews.map(r=>`<div class="rv"><div class="who">${r.exp?'<span class="chip expert" style="padding:2px 7px;font-size:10px">знаток</span>':''}<span>${esc(nameOf(r.u))}</span><span class="n">${r.tot}</span></div><p>${esc(r.note)}</p></div>`).join('')}</div>`:''}
+  </article>`;
+}
+function loadingOrEmpty(title,text){
+  if(!S.loaded.posts)return `<div class="empty"><b>Загружаем завозы…</b></div>`;
+  return `<div class="empty"><b>${title}</b>${text}</div>`;
+}
+function viewFeed(){
+  const ws=weekStart(Date.now());
+  const all=allPosts();
+  let ps=all.filter(p=>p.status==='ok');
+  if(S.scope==='week')ps=ps.filter(p=>p.pubAt>=ws);
+  const rows=ps.map(p=>({p,sc:scoreOf(p)}));
+  if(S.sort==='top')rows.sort((a,b)=>((b.sc.fin??-1)-(a.sc.fin??-1))||(b.p.pubAt-a.p.pubAt));
+  else rows.sort((a,b)=>b.p.pubAt-a.p.pubAt);
+  const mine=all.filter(p=>S.myIds.has(p.id)&&p.status!=='ok').sort((a,b)=>b.createdAt-a.createdAt);
+  return `
+  <div class="toolbar">
+    <div class="seg"><button data-sort="new" class="${S.sort==='new'?'on':''}">Свежие</button><button data-sort="top" class="${S.sort==='top'?'on':''}">Лучшие</button></div>
+    <div class="seg"><button data-scope="week" class="${S.scope==='week'?'on':''}">Эта неделя</button><button data-scope="all" class="${S.scope==='all'?'on':''}">Все</button></div>
+  </div>
+  ${mine.length?`<div class="legend">Ваши завозы на рассмотрении:</div>${mine.map(p=>card(p,scoreOf(p))).join('')}<div class="legend" style="margin-top:6px">Лента:</div>`:''}
+  ${rows.length?rows.map(r=>card(r.p,r.sc)).join(''):loadingOrEmpty(S.scope==='week'?'На этой неделе завозов пока нет':'Завозов пока нет','Предложите первый — вкладка «Предложить».')}`;
+}
+function viewRating(){
+  const now=Date.now();
+  const ws=weekStart(now)+S.weekOffset*7*DAY, we=ws+7*DAY, live=now<we;
+  const rows=allPosts().filter(p=>p.status==='ok'&&p.pubAt>=ws&&p.pubAt<we).map(p=>({p,sc:scoreOf(p)})).filter(x=>x.sc.fin!=null)
+    .sort((a,b)=>(b.sc.fin-a.sc.fin)||(b.sc.n-a.sc.n));
+  return `
+  <h2>Рейтинг недели</h2>
+  <div class="weeknav">
+    <button class="btn" data-week="-1">‹</button>
+    <div class="lbl">${fD.format(ws)} — ${fD.format(we-1)}<small>${live?'Неделя идёт · итоги в вс 23:59 МСК':'Итоги подведены'}</small></div>
+    <button class="btn" data-week="1" ${S.weekOffset>=0?'disabled':''}>›</button>
+  </div>
+  <div class="legend">Итог = ${Math.round(W_EXP*100)}% оценки знатоков + ${Math.round((1-W_EXP)*100)}% народной. Если оценили только одни — берётся их среднее. 5 критериев по ${MAX} баллов.</div>
+  ${rows.length?rows.map((r,i)=>`
+    <div class="card ${i<3?'top':''}">
+      <div class="rk p${i+1}">
+        <div class="pos">${i+1}</div>
+        <div><h4>${esc(r.p.title)}</h4><div class="m">#${esc(r.p.tag)} · знатоки ${fmt1(r.sc.e)} · народ ${fmt1(r.sc.p)} · ${r.sc.n} ${plural(r.sc.n,'оценка','оценки','оценок')}</div></div>
+        <div class="sc" style="color:${scoreColor(r.sc.fin)}">${r.sc.fin}</div>
+      </div>
+      ${i<3?critHtml(r.sc.crit):''}
+    </div>`).join(''):loadingOrEmpty('Рейтинг пуст','В рейтинг попадают опубликованные за неделю завозы, у которых есть хотя бы одна оценка.')}`;
+}
+function viewAdd(){
+  const d=S.draft;
+  return `
+  <h2>Предложить завоз</h2>
+  <div class="sub-h">${S.me.admin?'Как администратор, вы публикуете сразу.':'После проверки администратором завоз появится в ленте.'}</div>
+  <form id="addForm" class="card">
+    <label class="f" for="fTitle">Заголовок</label>
+    <input type="text" id="fTitle" maxlength="140" placeholder="Что завезли?" value="${esc(d.title)}" required>
+    <label class="f" for="fText">Подробности</label>
+    <textarea id="fText" maxlength="1500" placeholder="Суть, контекст, почему это важно">${esc(d.text)}</textarea>
+    <div class="cnt"><span id="cnt">${d.text.length}</span>/1500</div>
+    <label class="f" for="fLink">Ссылка на источник</label>
+    <input type="url" id="fLink" placeholder="https://…" value="${esc(d.link)}">
+    <label class="f" for="fTag">Рубрика</label>
+    <select id="fTag">${TAGS.map(t=>`<option ${t===d.tag?'selected':''}>${t}</option>`).join('')}</select>
+    <label class="check"><input type="checkbox" id="fAnon" ${d.anon?'checked':''}><span>Анонимно<small>Имя не покажется в ленте и не хранится в публичных данных. Автора видят только администраторы.</small></span></label>
+    <div class="actions"><button class="btn primary" type="submit">Отправить в комитет</button></div>
+  </form>`;
+}
+function viewAdmin(){
+  const pend=allPosts().filter(p=>p.status==='pending').sort((a,b)=>a.createdAt-b.createdAt);
+  const q=S.q.trim().toLowerCase();
+  const users=Object.entries(S.names).map(([id,u])=>({id,name:String((u&&u.name)||'Участник'),r:S.roles[id]||{}}))
+    .filter(u=>!q||u.name.toLowerCase().includes(q))
+    .sort((a,b)=>((b.r.admin?2:0)+(b.r.expert?1:0))-((a.r.admin?2:0)+(a.r.expert?1:0))||a.name.localeCompare(b.name,'ru')).slice(0,50);
+  return `
+  <h2>Модерация</h2>
+  ${pend.length?pend.map(p=>card(p,scoreOf(p),`<button class="btn ok" data-act="approve" data-id="${esc(p.id)}">Опубликовать</button><button class="btn danger" data-act="reject" data-id="${esc(p.id)}">Отклонить</button>`)).join(''):'<div class="card legend" style="margin-bottom:12px">Очередь пуста.</div>'}
+  <h2 style="margin-top:22px">Участники и роли</h2>
+  <div class="sub-h">Знатоки дают ${Math.round(W_EXP*100)}% итога, их рецензии показываются первыми. Админы модерируют и назначают роли.</div>
+  <div class="card">
+    <input type="search" id="uq" placeholder="Поиск по имени" value="${esc(S.q)}" autocomplete="off">
+    <div class="ulist" id="ulist">${usersHtml(users)}</div>
+  </div>`;
+}
+function usersHtml(users){
+  if(!users.length)return '<div class="legend">Никого не найдено. Участник появится здесь после первого входа.</div>';
+  return users.map(u=>`<div class="urow"><span>${esc(u.name)}${u.id===S.me.id?' (вы)':''}</span><span style="display:flex;gap:6px">
+    <button class="btn ${u.r.expert?'ok':''}" style="padding:6px 10px" data-act="toggleExpert" data-id="${esc(u.id)}">${u.r.expert?'✓ Знаток':'Знаток'}</button>
+    ${u.id===S.me.id?'':`<button class="btn ${u.r.admin?'ok':''}" style="padding:6px 10px" data-act="toggleAdmin" data-id="${esc(u.id)}">${u.r.admin?'✓ Админ':'Админ'}</button>`}
+  </span></div>`).join('');
+}
+
+/* ---------- окна ---------- */
+function openSheet(html){const box=$('#sheetBox');box.style.position='relative';box.innerHTML=html;$('#sheet').classList.remove('hidden');}
+function closeSheet(){$('#sheet').classList.add('hidden');$('#sheetBox').innerHTML='';}
+$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet();});
+
+function openProfile(){
+  const cur=(S.names[S.me.id]&&S.names[S.me.id].name)||'';
+  openSheet(`
+    <h3 style="padding:0">Профиль</h3>
+    <label class="f" for="pName">Имя в Комитете</label>
+    <input type="text" id="pName" maxlength="40" value="${esc(cur)}">
+    <label class="f">Ваш ID (нужен, чтобы назначить первого админа)</label>
+    <div class="urow" style="font-family:'JetBrains Mono',monospace;font-size:12px;word-break:break-all"><span id="pId">${esc(S.me.id)}</span><button class="btn" id="pCopy" style="padding:6px 10px">Копировать</button></div>
+    <div class="actions" style="justify-content:space-between">
+      <button class="btn danger" id="pOut">Выйти</button>
+      <span style="display:flex;gap:8px"><button class="btn ghost" id="pCancel">Закрыть</button><button class="btn primary" id="pSave">Сохранить</button></span>
+    </div>`);
+  $('#pCancel').onclick=closeSheet;
+  $('#pCopy').onclick=async()=>{try{await navigator.clipboard.writeText(S.me.id);toast('ID скопирован');}catch(e){toast('Выделите ID и скопируйте вручную');}};
+  $('#pOut').onclick=()=>{closeSheet();signOut(auth);};
+  $('#pSave').onclick=async()=>{
+    const n=$('#pName').value.trim().slice(0,40);
+    if(!n)return toast('Введите имя');
+    if(await run(()=>setDoc(doc(db,'users',S.me.id),{name:n,nameLower:n.toLowerCase()}),'Имя сохранено'))closeSheet();
+  };
+}
+function openRate(pid){
+  const p=allPosts().find(x=>x.id===pid);if(!p)return;
+  const sc=scoreOf(p);
+  const s=sc.mine?sc.mine.s.slice():[10,10,10,10,10];
+  const exp=S.me.expert;
+  const sum=()=>s.reduce((a,b)=>a+b,0);
+  openSheet(`
+    <div class="total" id="tot" style="color:${scoreColor(sum())}">${sum()}<small>из 100</small></div>
+    <div class="legend" style="margin:0 0 4px">${exp?'Оценка знатока':'Народная оценка'}</div>
+    <h3>${esc(p.title)}</h3>
+    ${CRIT.map((c,i)=>`<div class="sl"><div class="t"><b>${i+1}. ${c.k}</b><span id="v${i}">${s[i]}</span></div><div class="d">${c.d}</div><input type="range" min="0" max="${MAX}" step="1" value="${s[i]}" data-i="${i}" aria-label="${c.k}"></div>`).join('')}
+    <label class="f" for="rNote">${exp?'Рецензия знатока':'Комментарий (по желанию)'}</label>
+    <textarea id="rNote" maxlength="1500" style="min-height:80px" placeholder="${exp?'Обоснуйте оценку — рецензия будет видна всем':'Пара слов о завозе'}">${esc(sc.mine?sc.mine.note:'')}</textarea>
+    <div class="actions" style="justify-content:space-between">
+      <div style="display:flex;gap:8px">${sc.mine?'<button class="btn danger" id="rDel">Отозвать</button>':''}<button class="btn ghost" id="rCancel">Отмена</button></div>
+      <button class="btn primary" id="rSave">Сохранить оценку</button>
+    </div>`);
+  $('#sheetBox').querySelectorAll('input[type=range]').forEach(r=>r.addEventListener('input',()=>{
+    const i=+r.dataset.i;s[i]=+r.value;$('#v'+i).textContent=s[i];
+    const T=$('#tot');T.firstChild.nodeValue=sum();T.style.color=scoreColor(sum());
+  }));
+  const rid=pid+'_'+S.me.id;
+  $('#rCancel').onclick=closeSheet;
+  if($('#rDel'))$('#rDel').onclick=()=>{closeSheet();run(()=>deleteDoc(doc(db,'ratings',rid)),'Оценка отозвана');};
+  $('#rSave').onclick=async()=>{
+    $('#rSave').disabled=true;
+    const note=$('#rNote').value.trim().slice(0,1500);
+    const total=sum();
+    closeSheet();
+    run(()=>setDoc(doc(db,'ratings',rid),{pid,uid:S.me.id,s:s.map(v=>Math.round(v)),note,at:Date.now()}),`Оценка ${total} сохранена`);
+  };
+}
+
+/* ---------- события ---------- */
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;S.tab=b.dataset.tab;S.dirty=false;document.activeElement&&document.activeElement.blur&&document.activeElement.blur();render();window.scrollTo(0,0);});
+$('#role').addEventListener('click',e=>{if(e.target.closest('#profileBtn'))openProfile();});
+$('#view').addEventListener('click',async e=>{
+  const s=e.target.closest('[data-sort]');if(s){S.sort=s.dataset.sort;return render();}
+  const sc=e.target.closest('[data-scope]');if(sc){S.scope=sc.dataset.scope;return render();}
+  const w=e.target.closest('[data-week]');if(w){S.weekOffset=Math.min(0,S.weekOffset+(+w.dataset.week));return render();}
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const id=b.dataset.id,act=b.dataset.act;
+  if(act==='google')return run(()=>signInWithPopup(auth,new GoogleAuthProvider()));
+  if(act==='authmode'){S.authMode=S.authMode==='up'?'in':'up';return render();}
+  if(act==='reset'){const m=($('#aMail')||{}).value;if(!m)return toast('Введите почту в поле выше');return run(()=>sendPasswordResetEmail(auth,m.trim()),'Письмо для сброса пароля отправлено');}
+  if(act==='rate')return openRate(id);
+  if(act==='rev'){S.open.has(id)?S.open.delete(id):S.open.add(id);return render();}
+  b.disabled=true;
+  const now=Date.now();
+  if(act==='approve')await run(()=>updateDoc(doc(db,'posts',id),{status:'ok',pubAt:now}),'Опубликовано');
+  else if(act==='reject')await run(()=>updateDoc(doc(db,'posts',id),{status:'no',pubAt:now}),'Отклонено');
+  else if(act==='unpub')await run(()=>updateDoc(doc(db,'posts',id),{status:'no',pubAt:now}),'Завоз снят с ленты');
+  else if(act==='del')await run(()=>{const bt=writeBatch(db);bt.delete(doc(db,'posts',id));bt.delete(doc(db,'postAuthors',id));return bt.commit();},'Удалено');
+  else if(act==='toggleExpert'){const r=S.roles[id]||{};await run(()=>setDoc(doc(db,'roles',id),{admin:r.admin===true,expert:!(r.expert===true)}),r.expert?'Роль знатока снята':'Назначен знатоком');}
+  else if(act==='toggleAdmin'){const r=S.roles[id]||{};await run(()=>setDoc(doc(db,'roles',id),{admin:!(r.admin===true),expert:r.expert===true}),r.admin?'Права админа сняты':'Назначен админом');}
+  if(b.isConnected)b.disabled=false;
+});
+$('#view').addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='fTitle')S.draft.title=t.value;
+  else if(t.id==='fText'){S.draft.text=t.value;const c=$('#cnt');if(c)c.textContent=t.value.length;}
+  else if(t.id==='fLink')S.draft.link=t.value;
+  else if(t.id==='uq'){S.q=t.value;const l=$('#ulist');if(l){const q=S.q.trim().toLowerCase();
+    const users=Object.entries(S.names).map(([id,u])=>({id,name:String((u&&u.name)||'Участник'),r:S.roles[id]||{}})).filter(u=>!q||u.name.toLowerCase().includes(q)).slice(0,50);
+    l.innerHTML=usersHtml(users);}}
+});
+$('#view').addEventListener('change',e=>{const t=e.target;if(t.id==='fTag')S.draft.tag=t.value;if(t.id==='fAnon')S.draft.anon=t.checked;});
+$('#view').addEventListener('focusout',()=>{setTimeout(()=>{if(S.dirty&&!$('#view').contains(document.activeElement)){S.dirty=false;render();}},0);});
+$('#view').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(e.target.id==='mailForm'){
+    const mail=$('#aMail').value.trim(),pass=$('#aPass').value;
+    if(S.authMode==='up'){
+      const name=($('#aName').value||'').trim().slice(0,40);
+      if(!name)return toast('Введите имя');
+      S.pendingName=name;
+      return run(()=>createUserWithEmailAndPassword(auth,mail,pass));
+    }
+    return run(()=>signInWithEmailAndPassword(auth,mail,pass));
+  }
+  if(e.target.id!=='addForm')return;
+  const d=S.draft,title=d.title.trim();
+  if(title.length<4)return toast('Заголовок слишком короткий');
+  const link=d.link.trim();
+  if(link&&!safeUrl(link))return toast('Ссылка должна начинаться с http(s)://');
+  const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;
+  const now=Date.now();
+  const ref=doc(collection(db,'posts'));
+  const ok=await run(()=>{
+    const bt=writeBatch(db);
+    bt.set(ref,{title:title.slice(0,140),text:d.text.trim().slice(0,1500),link:link.slice(0,500),tag:d.tag,anon:!!d.anon,
+      by:d.anon?null:S.me.id,createdAt:now,pubAt:now,status:S.me.admin?'ok':'pending'});
+    bt.set(doc(db,'postAuthors',ref.id),{uid:S.me.id});
+    return bt.commit();
+  },S.me.admin?'Завоз опубликован':'Отправлено на модерацию');
+  if(!ok){btn.disabled=false;return;}
+  S.draft={title:'',text:'',link:'',tag:TAGS[0],anon:false};
+  S.tab='feed';S.dirty=false;document.activeElement&&document.activeElement.blur();render();window.scrollTo(0,0);
+});
+
+/* ---------- WebGL-фон ---------- */
+function startGL(){
+  const c=document.querySelector('#bg');let gl;
+  try{gl=c.getContext('webgl',{antialias:false,alpha:false,powerPreference:'low-power'});}catch(e){}
+  if(!gl)return;
+  const vs='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  const fs=`precision mediump float;uniform vec2 r;uniform float t;
+  float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+  float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+1.),f.x),f.y);}
+  float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}
+  void main(){vec2 uv=gl_FragCoord.xy/r;vec2 p=uv*vec2(r.x/r.y,1.)*1.6;
+    float q=fbm(p+vec2(t*.02,t*.015));float w=fbm(p+q*2.2+vec2(t*.04,-t*.03));
+    vec3 c=vec3(.05,.05,.066);
+    c+=vec3(1.,.29,.17)*smoothstep(.5,.95,w)*.33;
+    c+=vec3(.42,.3,.95)*smoothstep(.48,.92,q)*.2;
+    c+=vec3(1.,.76,.3)*pow(smoothstep(.72,1.,w),3.)*.12;
+    c*=.75+.35*uv.y;
+    c+=(h(gl_FragCoord.xy+fract(t))-.5)*.025;
+    gl_FragColor=vec4(c,1.);}`;
+  const sh=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return gl.getShaderParameter(s,gl.COMPILE_STATUS)?s:null;};
+  const v=sh(gl.VERTEX_SHADER,vs),f=sh(gl.FRAGMENT_SHADER,fs);if(!v||!f)return;
+  const pr=gl.createProgram();gl.attachShader(pr,v);gl.attachShader(pr,f);gl.linkProgram(pr);
+  if(!gl.getProgramParameter(pr,gl.LINK_STATUS))return;
+  gl.useProgram(pr);
+  const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  const uR=gl.getUniformLocation(pr,'r'),uT=gl.getUniformLocation(pr,'t');
+  const scale=.5;
+  function size(){const w=Math.max(1,Math.floor(innerWidth*scale)),hh=Math.max(1,Math.floor(innerHeight*scale));if(c.width!==w||c.height!==hh){c.width=w;c.height=hh;gl.viewport(0,0,w,hh);}}
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let last=0;const t0=performance.now();
+  function frame(now){
+    if(document.hidden){requestAnimationFrame(frame);return;}
+    if(now-last>=33){last=now;size();gl.uniform2f(uR,c.width,c.height);gl.uniform1f(uT,(now-t0)/1000);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);}
+    if(!reduce)requestAnimationFrame(frame);
+  }
+  addEventListener('resize',()=>{if(reduce)requestAnimationFrame(frame);});
+  requestAnimationFrame(frame);
+}
+
+/* ---------- запуск ---------- */
+render();startGL();
+if(configured){
+  onAuthStateChanged(auth,async u=>{
+    stopAll();
+    S.user=u;S.authReady=true;
+    S.me={id:u?u.uid:null,admin:false,expert:false};
+    S.okPosts={};S.adminPosts={};S.myPosts={};S.myIds=new Set();S.authors={};S.ratings={};S.roles={};S.names={};
+    S.loaded={posts:false,ratings:false};S.notice='';S.tab='feed';
+    render();
+    if(!u)return;
+    try{
+      const ref=doc(db,'users',u.uid);
+      const snap=await getDoc(ref);
+      const want=S.pendingName||(snap.exists()&&snap.data().name)||u.displayName||(u.email||'').split('@')[0]||'Участник';
+      S.pendingName=null;
+      if(!snap.exists()||snap.data().name!==want)await setDoc(ref,{name:want.slice(0,40),nameLower:want.slice(0,40).toLowerCase()});
+    }catch(e){console.error(e);}
+    startData();
+  });
+}
+
+</script>
+</body>
+</html>
