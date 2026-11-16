@@ -484,6 +484,7 @@ body.inchat .composer{position:static;margin:0;flex:none}
 .csend svg{width:18px;height:18px}
 .cm .who .t{flex-basis:100%;margin-left:0;order:9}
 .cm .who .t{display:none}
+.cm .re{font-size:11.5px;color:var(--mute);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cm .meta2{display:flex;gap:12px;align-items:center;font-size:11px;color:var(--mute);margin-top:3px}
 .cform .btn{flex-shrink:0}
 .cform .as{font-size:11.5px;color:var(--mute)}
@@ -1199,7 +1200,7 @@ $('#view').addEventListener('click',async e=>{
   if(act==='editprof')return openEditProfile();
   if(act==='logout')return signOut(auth);
   if(act==='copyid'){try{await navigator.clipboard.writeText(S.me.id);toast('ID скопирован');}catch(err){toast('ID: '+S.me.id);}return;}
-  if(act==='creply'){S.creply[id]=b.dataset.to;S.open.add(id);render();const t=$('#cIn-'+cssId(id));if(t){t.focus();t.scrollIntoView({block:'center',behavior:'smooth'});}return;}
+  if(act==='creply'){S.creply[id]={to:b.dataset.to||'',re:b.dataset.re||''};S.open.add(id);render();const t=$('#cIn-'+cssId(id));if(t){t.focus();t.scrollIntoView({block:'center',behavior:'smooth'});}return;}
   if(act==='crx'){delete S.creply[id];return render();}
   if(act==='csend')return sendComment(id);
   if(act==='cdel')return delComment(id);
@@ -1762,7 +1763,8 @@ function setVEl(mid,on){const e=document.querySelector(`[data-vid="${CSS.escape(
 /* ---------- комментарии к завозам ---------- */
 function cssId(x){return String(x).replace(/[^A-Za-z0-9_-]/g,'_');}
 function commentsOf(pid){return Object.entries(S.comments).map(([id,c])=>({id,...c})).filter(c=>c&&c.pid===pid&&typeof c.text==='string').sort((a,b)=>(+a.at||0)-(+b.at||0));}
-function commentHtml(c,p,own){
+function cmName(c){return c.author&&!c.by?'Автор завоза':realName(c.by);}
+function commentHtml(c,p,own,all){
   let who;
   if(c.author){
     const base=c.by?ulink(c.by,22):`<span class="anon-who"><span class="av-anon" aria-hidden="true">?</span>Аноним</span>`;
@@ -1770,28 +1772,30 @@ function commentHtml(c,p,own){
     who=`${base}<span class="chip au">автор завоза</span>${adm}`;
   }else who=`${ulink(c.by,22)}${roleChip(c.by,true)}`;
   const canDel=S.me.admin||(c.by&&c.by===S.me.id)||(c.author&&own);
-  return `<div class="cm ${c.author?'au':''}"><div class="who">${who}</div><p>${esc(c.text)}</p><div class="rbar meta2"><span>${fDT.format(+c.at||0)}</span>${canDel?`<button class="lnk mute" data-act="cdel" data-id="${esc(c.id)}">Удалить</button>`:''}</div></div>`;
+  const par=c.re&&all?all.find(x=>x.id===c.re):null;
+  const reTxt=par?`<div class="re">↪ в ответ ${esc(cmName(par))}: «${esc(String(par.text).slice(0,60))}${String(par.text).length>60?'…':''}»</div>`:'';
+  return `<div class="cm ${c.author?'au':''}"><div class="who">${who}</div>${reTxt}<p>${esc(c.text)}</p><div class="rbar meta2"><span>${fDT.format(+c.at||0)}</span><button class="lnk" data-act="creply" data-id="${esc(p.id)}" data-to="${esc(c.to||'')}" data-re="${esc(c.id)}">Ответить</button>${canDel?`<button class="lnk mute" data-act="cdel" data-id="${esc(c.id)}">Удалить</button>`:''}</div></div>`;
 }
 function discussionHtml(p,sc,cms,own){
   const reviewers=new Set(sc.reviews.map(r=>r.u));
   const by=u=>cms.filter(c=>c.to===u);
   const general=cms.filter(c=>!c.to||!reviewers.has(c.to));
   const pid=esc(p.id);
-  const rto=S.creply[p.id];
+  const rp=S.creply[p.id]||null;const rto=rp&&rp.to;const rre=rp&&rp.re?cms.find(c=>c.id===rp.re):null;
   const revs=sc.reviews.map(r=>{
     const rs=by(r.u);
     return `<div class="rv"><div class="who">${roleChip(r.u,true)}${ulink(r.u,22)}<span class="n">${r.tot}</span></div><p>${esc(r.note)}</p>
       <div class="rbar"><button class="lnk" data-act="creply" data-id="${pid}" data-to="${esc(r.u)}">Ответить${own?' как автор':''}</button></div>
-      ${rs.length?`<div class="cms">${rs.map(c=>commentHtml(c,p,own)).join('')}</div>`:''}</div>`;
+      ${rs.length?`<div class="cms">${rs.map(c=>commentHtml(c,p,own,cms)).join('')}</div>`:''}</div>`;
   }).join('');
   const asTxt=own?(p.anon?'Вы пишете как автор завоза — анонимно, ваше имя не покажется':'Вы пишете как автор завоза'):'';
   return `<div class="disc">
     ${sc.reviews.length?`<h5>Рецензии · ${sc.reviews.length}</h5>${revs}`:''}
-    ${general.length?`<h5>Комментарии · ${general.length}</h5><div class="cms">${general.map(c=>commentHtml(c,p,own)).join('')}</div>`:''}
+    ${general.length?`<h5>Комментарии · ${general.length}</h5><div class="cms">${general.map(c=>commentHtml(c,p,own,cms)).join('')}</div>`:''}
     ${!sc.reviews.length&&!general.length?'<div class="legend" style="margin:0">Пока никто ничего не написал. Будьте первым.</div>':''}
     <div class="cform">
-      ${rto&&reviewers.has(rto)?`<div class="to">Ответ на рецензию <b>${esc(realName(rto))}</b><button class="lnk mute" data-act="crx" data-id="${pid}" aria-label="Отменить ответ">✕</button></div>`:''}
-      <div class="row2"><textarea id="cIn-${cssId(p.id)}" data-cpid="${pid}" maxlength="1000" rows="1" placeholder="${rto&&reviewers.has(rto)?'Ваш ответ…':'Комментарий…'}" aria-label="Комментарий">${esc(S.cdraft[p.id]||'')}</textarea><button class="csend" data-act="csend" data-id="${pid}" aria-label="Отправить">${IC.send}</button></div>
+      ${rre?`<div class="to">Ответ <b>${esc(cmName(rre))}</b><button class="lnk mute" data-act="crx" data-id="${pid}" aria-label="Отменить ответ">✕</button></div>`:rto&&reviewers.has(rto)?`<div class="to">Ответ на рецензию <b>${esc(realName(rto))}</b><button class="lnk mute" data-act="crx" data-id="${pid}" aria-label="Отменить ответ">✕</button></div>`:''}
+      <div class="row2"><textarea id="cIn-${cssId(p.id)}" data-cpid="${pid}" maxlength="1000" rows="1" placeholder="${rre||(rto&&reviewers.has(rto))?'Ваш ответ…':'Комментарий…'}" aria-label="Комментарий">${esc(S.cdraft[p.id]||'')}</textarea><button class="csend" data-act="csend" data-id="${pid}" aria-label="Отправить">${IC.send}</button></div>
       ${asTxt?`<div class="as">${asTxt}</div>`:''}
     </div>
   </div>`;
@@ -1802,10 +1806,11 @@ async function sendComment(pid){
   const text=String(S.cdraft[pid]||'').trim();
   if(!text)return toast('Напишите текст комментария');
   const own=S.myIds.has(p.id)||p.by===S.me.id;
-  const sc=scoreOf(p);const rto=S.creply[pid];
+  const sc=scoreOf(p);const rp=S.creply[pid]||{};const rto=rp.to;
   const to=rto&&sc.reviews.some(r=>r.u===rto)?rto:'';
+  const re=rp.re&&S.comments[rp.re]?rp.re:'';
   const id=Date.now().toString(36)+Math.random().toString(36).slice(2,10);
-  const data={pid,by:own&&p.anon?null:S.me.id,author:!!own,to,text:text.slice(0,1000),at:Date.now()};
+  const data={pid,by:own&&p.anon?null:S.me.id,author:!!own,to,text:text.slice(0,1000),at:Date.now()};if(re)data.re=re;
   const ok=await run(()=>setDoc(doc(db,'comments',id),data));
   if(ok){S.cdraft[pid]='';delete S.creply[pid];if(t){t.value='';t.blur();}S.dirty=false;render();}
 }
