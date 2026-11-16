@@ -98,6 +98,8 @@ nav.tabs .in{display:flex;gap:4px;background:rgba(255,253,248,.95);backdrop-filt
 nav.tabs button{flex:1;border:0;background:transparent;color:var(--mute);font:700 10.5px var(--F);padding:8px 2px;border-radius:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
 nav.tabs button svg{width:20px;height:20px}
 nav.tabs button.on{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#fff}
+nav.tabs .in.many button{font-size:9.5px;letter-spacing:-.1px}
+nav.tabs .in.many{gap:2px}
 nav.tabs .dot{position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;border-radius:8px;background:var(--danger);color:#fff;font-size:10px;line-height:16px;padding:0 4px}
 .sheet{position:fixed;inset:0;z-index:10;display:flex;align-items:flex-end;justify-content:center;background:rgba(31,26,18,.45)}
 .sheet.hidden{display:none}
@@ -436,6 +438,20 @@ body.inchat .composer{position:static;margin:0;flex:none}
 .ref-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .ref-n{font-weight:900;font-size:22px;color:var(--gold3);min-width:30px;text-align:right}
 .ref-list{display:flex;flex-wrap:wrap;gap:6px 12px;margin:8px 0 0 38px;font-size:12.5px;color:var(--mute)}
+
+.anon-link{color:var(--gold3,#8a6619)!important;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.anon-link span{display:none}
+.fr-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.fr-state{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#2f9466}
+.fr-sec{margin-top:18px}
+.fr-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:#f8f1e1;border-radius:14px}
+.fr-row+.fr-row{margin-top:6px}
+.fr-row .ulink{min-width:0;flex:1}
+.fr-row .ulink span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-row .btns{display:flex;gap:6px;flex-shrink:0}
+.fr-row .btn{padding:6px 11px;font-size:12.5px}
+.fr-add{display:flex;gap:8px;margin-top:10px}
+.fr-add input{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -504,6 +520,7 @@ const S = {
   okPosts:{}, adminPosts:{}, myPosts:{}, myIds:new Set(), authors:{}, ratings:{}, roles:{}, names:{},
   loaded:{posts:false, ratings:false},
   tab:'feed', sort:'new', scope:'week', weekOffset:0,
+  fr:{},frLoaded:false,frAddErr:'',
   open:new Set(), draft:{title:'',text:'',link:'',tag:TAGS[0],anon:false,files:[],mentions:[]},
   q:'', notice:'', dirty:false, authMode:'in'
 };
@@ -580,6 +597,8 @@ function startData(){
     if(!S.me.admin&&wasAdmin){adminUnsubs.forEach(u=>u());adminUnsubs=[];S.adminPosts={};S.authors={};if(S.tab==='admin')S.tab='feed';}
     render();
   },onErr));
+  S.fr={};S.frLoaded=false;
+  unsubs.push(onSnapshot(query(collection(db,'friendships'),where('members','array-contains',uid)),s=>{S.fr=mapSnap(s);S.frLoaded=true;render();},e=>{console.error(e);S.frLoaded=true;render();}));
   unsubs.push(onSnapshot(collection(db,'ratings'),s=>{S.ratings=mapSnap(s);S.loaded.ratings=true;scheduleAutoPromote();render();},onErr));
   unsubs.push(onSnapshot(query(collection(db,'posts'),where('status','==','ok')),s=>{S.okPosts=mapSnap(s);S.loaded.posts=true;scheduleAutoPromote();render();},onErr));
   unsubs.push(onSnapshot(query(collection(db,'postAuthors'),where('uid','==',uid)),s=>{
@@ -631,6 +650,7 @@ function scoreOf(p){
 
 /* ---------- рендер ---------- */
 const ICON={
+  friends:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.7.8 2.9 2.6 3.5 5.2"/></svg>',
   feed:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
   rating:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3"/></svg>',
   add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
@@ -645,10 +665,13 @@ function renderTabs(){
   const pend=S.me.admin?allPosts().filter(p=>p.status==='pending').length:0;
   const tabs=[['feed','Лента'],['rating','Рейтинг'],['add','Завоз']];
   if(canChat())tabs.push(['chats','Чаты']);
+  tabs.push(['friends','Друзья']);
   if(S.me.admin)tabs.push(['admin','Комитет']);
+  const frIn=frIncoming().length;
   const unr=canChat()?unreadCount():0;
   tabs.push(['profile','Профиль']);
-  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-tab="${k}" class="${(S.tab===k||(k==='chats'&&S.tab==='chat'))&&(k!=='profile'||S.profileId===S.me.id)?'on':''}">${ICON[k]}${l}${k==='admin'&&pend?`<span class="dot">${pend}</span>`:''}${k==='chats'&&unr?`<span class="dot">${unr}</span>`:''}</button>`).join('');
+  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-tab="${k}" class="${(S.tab===k||(k==='chats'&&S.tab==='chat'))&&(k!=='profile'||S.profileId===S.me.id)?'on':''}">${ICON[k]}${l}${k==='admin'&&pend?`<span class="dot">${pend}</span>`:''}${k==='chats'&&unr?`<span class="dot">${unr}</span>`:''}${k==='friends'&&frIn?`<span class="dot">${frIn}</span>`:''}</button>`).join('');
+  $('#tabs').classList.toggle('many',tabs.length>6);
 }
 function renderRole(){
   if(!S.user){$('#role').innerHTML='';return;}
@@ -673,6 +696,7 @@ function render(){
   else if(S.tab==='add')v.innerHTML=viewAdd();
   else if(S.tab==='admin'&&S.me.admin)v.innerHTML=viewAdmin();
   else if(S.tab==='profile')v.innerHTML=viewProfile(S.profileId||S.me.id);
+  else if(S.tab==='friends')v.innerHTML=viewFriends();
   else if(S.tab==='chats'&&canChat()){closeMsgs();v.innerHTML=viewChats();}
   else if(S.tab==='chat'&&canChat()){v.innerHTML=viewChatRoom();if(S.chats[S.chatId]){openMsgs(S.chatId);S.forceBottom=true;patchChat();updSendBtn();}}
   else if(S.tab==='post')v.innerHTML=viewPost(S.postId);
@@ -704,7 +728,7 @@ function viewLogin(){
   </div>`;
 }
 function authorHtml(p){
-  if(p.anon)return S.me.admin&&S.tab==='admin'&&p.author?`Аноним (${esc(nameOf(p.author))})`:'Аноним';
+  if(p.anon)return S.me.admin&&p.author?`Аноним · <button class="ulink anon-link" data-act="profile" data-id="${esc(p.author)}">профиль автора ›</button>`:'Аноним';
   return p.by?ulink(p.by,20):'Участник';
 }
 function stamp(v,label){
@@ -1004,6 +1028,7 @@ function viewProfile(uid){
       <div class="stat"><b>${pubCount}</b><span>${plural(pubCount,'завоз','завоза','завозов')}</span></div>
     </div>
     ${own?'':`<div class="refline">🤝 Пригласил друзей: <b>${invitedOf(uid).length}</b></div>`}
+    ${own?'':friendActionsHtml(uid)}
     ${avg!=null?`<div class="legend" style="margin:12px 0 0">Стиль оценки: <b style="color:var(--paper)">${styleOf(avg)}</b></div>`:''}
     ${own?`<div class="actions"><button class="btn primary" data-act="editprof">Редактировать</button><button class="btn" data-act="copyid">Скопировать ID</button><button class="btn danger" data-act="logout">Выйти</button></div>`:''}
   </div>
@@ -1128,6 +1153,10 @@ $('#view').addEventListener('click',async e=>{
   if(act==='source'){const p=allPosts().find(x=>x.id===id);if(p)openSource(p);return;}
   if(act==='profile'){if(S.tab!=='profile')S.prevTab=S.tab;S.tab='profile';S.profileId=id;render();window.scrollTo(0,0);return;}
   if(act==='back'){S.tab=S.prevTab&&S.prevTab!=='profile'&&S.prevTab!=='post'?S.prevTab:'feed';render();window.scrollTo(0,0);return;}
+  if(act==='fradd')return frAdd(id);
+  if(act==='fracc')return frAccept(id);
+  if(act==='frdel')return frRemove(id,b.dataset.kind);
+  if(act==='fraddid')return frAddById();
   if(act==='editprof')return openEditProfile();
   if(act==='logout')return signOut(auth);
   if(act==='copyid'){try{await navigator.clipboard.writeText(S.me.id);toast('ID скопирован');}catch(err){toast('ID: '+S.me.id);}return;}
@@ -1494,9 +1523,9 @@ function viewChats(){
     </button>`).join('')}</div>`
   :`<div class="empty"><b>${S.chatsLoaded?'Чатов пока нет':'Загружаем…'}</b>${S.chatsLoaded?'Создайте чат, позовите знатоков и пересылайте туда завозы для обсуждения.':''}</div>`}`;
 }
-function chatters(){return Object.keys(S.names).filter(id=>id!==S.me.id&&(isExp(id)||roleOf(id).admin===true));}
+function chatters(){return friendIds().filter(id=>S.names[id]&&(isExp(id)||roleOf(id).admin===true));}
 function pickRows(ids,sel){
-  if(!ids.length)return '<div class="legend">Пока нет других знатоков.</div>';
+  if(!ids.length)return '<div class="legend">Здесь появятся ваши друзья-знатоки. Добавьте друзей во вкладке «Друзья» или в их профиле.</div>';
   return ids.map(id=>`<label class="pickrow"><input type="checkbox" value="${esc(id)}" ${sel&&sel.has(id)?'checked':''}>${avatarHtml(id,32)}<span>${esc(realName(id))}</span>${roleChip(id,true)}</label>`).join('');
 }
 function openNewChat(){
@@ -1680,6 +1709,63 @@ async function playVoice(mid){
   finally{const e2=document.querySelector(`[data-vid="${CSS.escape(mid)}"]`);if(e2)e2.classList.remove('loading');}
 }
 function setVEl(mid,on){const e=document.querySelector(`[data-vid="${CSS.escape(mid)}"]`);if(e)e.classList.toggle('playing',on);}
+
+
+/* ---------- друзья ---------- */
+function frId(a,b){return a<b?a+'_'+b:b+'_'+a;}
+function frOther(f){return (f.members||[]).find(x=>x!==S.me.id);}
+function frList(){return Object.entries(S.fr).map(([id,f])=>({id,...f,other:frOther(f)})).filter(f=>f.other);}
+function friendIds(){return frList().filter(f=>f.status==='ok').map(f=>f.other).sort((a,b)=>realName(a).localeCompare(realName(b),'ru'));}
+function frIncoming(){return frList().filter(f=>f.status==='pending'&&f.by!==S.me.id);}
+function frOutgoing(){return frList().filter(f=>f.status==='pending'&&f.by===S.me.id);}
+function frState(uid){const f=S.fr[frId(uid,S.me.id)];if(!f)return null;if(f.status==='ok')return 'friend';return f.by===S.me.id?'out':'in';}
+function friendActionsHtml(uid){
+  const st=frState(uid);const i=esc(uid);
+  if(st==='friend')return `<div class="fr-acts"><span class="fr-state">✓ В друзьях</span><button class="btn ghost" data-act="frdel" data-kind="friend" data-id="${i}">Удалить из друзей</button></div>`;
+  if(st==='out')return `<div class="fr-acts"><span class="legend" style="margin:0;align-self:center">Заявка отправлена</span><button class="btn ghost" data-act="frdel" data-kind="out" data-id="${i}">Отменить</button></div>`;
+  if(st==='in')return `<div class="fr-acts"><button class="btn primary" data-act="fracc" data-id="${i}">Принять в друзья</button><button class="btn ghost" data-act="frdel" data-kind="in" data-id="${i}">Отклонить</button></div>`;
+  return `<div class="fr-acts"><button class="btn primary" data-act="fradd" data-id="${i}">＋ Добавить в друзья</button></div>`;
+}
+async function frAdd(uid){
+  if(!uid||uid===S.me.id)return;
+  const st=frState(uid);if(st==='in')return frAccept(uid);if(st)return;
+  const m=[uid,S.me.id].sort();
+  return run(()=>setDoc(doc(db,'friendships',m[0]+'_'+m[1]),{members:m,by:S.me.id,status:'pending',at:Date.now()}),'Заявка отправлена');
+}
+async function frAccept(uid){return run(()=>updateDoc(doc(db,'friendships',frId(uid,S.me.id)),{status:'ok',at:Date.now()}),'Теперь вы друзья');}
+async function frRemove(uid,kind){
+  if(kind==='friend'&&!confirm(`Удалить ${realName(uid)} из друзей?`))return;
+  return run(()=>deleteDoc(doc(db,'friendships',frId(uid,S.me.id))),kind==='friend'?'Удалено из друзей':kind==='in'?'Заявка отклонена':'Заявка отменена');
+}
+async function frAddById(){
+  const inp=$('#frIdInp');const v=(inp&&inp.value||'').trim();
+  if(!v)return toast('Вставьте ID пользователя');
+  if(v===S.me.id)return toast('Это ваш собственный ID');
+  if(!S.names[v])return toast('Пользователь с таким ID не найден');
+  if(frState(v)==='friend')return toast('Вы уже друзья');
+  if(frState(v)==='out')return toast('Заявка уже отправлена');
+  if(inp)inp.value='';
+  return frAdd(v);
+}
+function frRow(uid,btns){return `<div class="fr-row">${ulink(uid,32)}<div class="btns">${btns}</div></div>`;}
+function viewFriends(){
+  const inc=frIncoming(),out=frOutgoing(),fr=friendIds();
+  const i=x=>esc(x);
+  return `
+  <h2>Друзья</h2>
+  <div class="card">
+    <div class="legend" style="margin:0">Найти человека можно только по ID или через его профиль — в ленте, рейтинге или по вашей ссылке-приглашению. В чаты можно звать только друзей.</div>
+    <label class="f" for="frIdInp" style="margin-top:12px">Добавить по ID</label>
+    <div class="fr-add"><input type="text" id="frIdInp" placeholder="ID из профиля друга" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn primary" data-act="fraddid">Добавить</button></div>
+    <div class="legend" style="margin:8px 0 0">Свой ID — в профиле, кнопка «Скопировать ID».</div>
+  </div>
+  ${inc.length?`<div class="fr-sec"><h2 style="margin:0 0 8px">Заявки · ${inc.length}</h2><div class="card">${inc.map(f=>frRow(f.other,`<button class="btn primary" data-act="fracc" data-id="${i(f.other)}">Принять</button><button class="btn ghost" data-act="frdel" data-kind="in" data-id="${i(f.other)}">✕</button>`)).join('')}</div></div>`:''}
+  <div class="fr-sec"><h2 style="margin:0 0 8px">Мои друзья · ${fr.length}</h2>
+  ${fr.length?`<div class="card">${fr.map(u=>frRow(u,`<button class="btn ghost" data-act="frdel" data-kind="friend" data-id="${i(u)}" aria-label="Удалить из друзей">Удалить</button>`)).join('')}</div>`
+    :`<div class="card legend" style="margin:0">${S.frLoaded?'Пока никого. Откройте профиль человека и нажмите «Добавить в друзья».':'Загружаем…'}</div>`}</div>
+  ${out.length?`<div class="fr-sec"><h2 style="margin:0 0 8px">Отправленные заявки</h2><div class="card">${out.map(f=>frRow(f.other,`<button class="btn ghost" data-act="frdel" data-kind="out" data-id="${i(f.other)}">Отменить</button>`)).join('')}</div></div>`:''}
+  ${inviteCardHtml()}`;
+}
 
 /* ---- инфо о чате, пересылка, просмотр завоза ---- */
 function openChatInfo(){
