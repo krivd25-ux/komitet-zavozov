@@ -455,6 +455,31 @@ body.inchat .composer{position:static;margin:0;flex:none}
 .fr-row .btn{padding:6px 11px;font-size:12.5px}
 .fr-add{display:flex;gap:8px;margin-top:10px}
 .fr-add input{flex:1;min-width:0}
+
+.disc{clear:both;margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:12px}
+.disc h5{margin:0;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mute)}
+.rv .rbar{display:flex;gap:12px;margin-top:4px}
+.lnk{background:none;border:0;padding:2px 0;font:inherit;font-size:12px;font-weight:700;color:var(--gold3,#8a6619);cursor:pointer}
+.lnk.mute{color:var(--mute);font-weight:600}
+.cms{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.cm{padding:8px 10px;background:#f8f1e1;border-radius:12px;font-size:13.5px}
+.rv .cms{margin-left:14px;padding-left:10px;border-left:2px solid rgba(176,133,42,.25)}
+.cm .who{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;font-weight:700}
+.cm .who .t{margin-left:auto;font-weight:500;color:var(--mute);font-size:11px}
+.cm p{margin:4px 0 0;color:#3d3527;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere}
+.cm.au{background:#eef4ef;border:1px solid rgba(13,61,46,.12)}
+.chip.au{background:#0d3d2e;color:#e7c873;border-color:transparent}
+.cm .chip{font-size:9px;padding:2px 7px;letter-spacing:.6px}
+.cm .anon-link{font-size:11px}
+.anon-who{display:inline-flex;align-items:center;gap:6px}
+.av-anon{width:22px;height:22px;border-radius:50%;background:#0d3d2e;color:#e7c873;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.cform{display:flex;flex-direction:column;gap:6px}
+.cform .to{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mute)}
+.cform .to b{color:var(--paper,#1f1a12)}
+.cform .row2{display:flex;gap:8px;align-items:flex-end}
+.cform textarea{flex:1;min-width:0;min-height:44px;max-height:160px;resize:vertical;font-size:16px;padding:10px 12px;border-radius:14px}
+.cform .btn{flex-shrink:0}
+.cform .as{font-size:11.5px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -524,6 +549,7 @@ const S = {
   loaded:{posts:false, ratings:false},
   tab:'feed', sort:'new', scope:'week', weekOffset:0,
   fr:{},frLoaded:false,frAddErr:'',
+  comments:{},cdraft:{},creply:{},
   open:new Set(), draft:{title:'',text:'',link:'',tag:TAGS[0],anon:false,files:[],mentions:[]},
   q:'', notice:'', dirty:false, authMode:'in'
 };
@@ -600,7 +626,8 @@ function startData(){
     if(!S.me.admin&&wasAdmin){adminUnsubs.forEach(u=>u());adminUnsubs=[];S.adminPosts={};S.authors={};if(S.tab==='admin')S.tab='feed';}
     render();
   },onErr));
-  S.fr={};S.frLoaded=false;
+  S.fr={};S.frLoaded=false;S.comments={};
+  unsubs.push(onSnapshot(query(collection(db,'comments'),orderBy('at'),limit(5000)),s=>{S.comments=mapSnap(s);render();},e=>console.error(e)));
   unsubs.push(onSnapshot(query(collection(db,'friendships'),where('members','array-contains',uid)),s=>{S.fr=mapSnap(s);S.frLoaded=true;render();},e=>{console.error(e);S.frLoaded=true;render();}));
   unsubs.push(onSnapshot(collection(db,'ratings'),s=>{S.ratings=mapSnap(s);S.loaded.ratings=true;scheduleAutoPromote();render();},onErr));
   unsubs.push(onSnapshot(query(collection(db,'posts'),where('status','==','ok')),s=>{S.okPosts=mapSnap(s);S.loaded.posts=true;scheduleAutoPromote();render();},onErr));
@@ -751,7 +778,8 @@ function card(p,sc,extra){
   if(canRate)acts+=`<button class="btn ${sc.mine?'':'primary'}" data-act="rate" data-id="${esc(p.id)}">${sc.mine?`Ваша оценка: ${sc.mine.tot} · изменить`:'Оценить'}</button>`;
   if(own&&p.status==='ok')acts+=`<span class="legend" style="margin:0;align-self:center">Свой завоз оценивать нельзя</span>`;
   if(p.status==='ok'&&canChat())acts+=`<button class="btn ghost" data-act="share" data-id="${esc(p.id)}">${IC.share.replace('<svg','<svg width="15" height="15"')} В чат</button>`;
-  if(sc.reviews.length)acts+=`<button class="btn ghost" data-act="rev" data-id="${esc(p.id)}">${open?'Скрыть':'Рецензии'} (${sc.reviews.length})</button>`;
+  const cms=p.status==='ok'?commentsOf(p.id):[];const disc=sc.reviews.length+cms.length;
+  if(p.status==='ok')acts+=`<button class="btn ghost" data-act="rev" data-id="${esc(p.id)}">${IC.comment} ${open?'Скрыть':(disc?`Обсуждение (${disc})`:'Обсудить')}</button>`;
   if(S.me.admin&&p.status==='ok')acts+=`<button class="btn danger" data-act="unpub" data-id="${esc(p.id)}">Снять</button>`;
   if(own&&p.status!=='ok')acts+=`<button class="btn danger" data-act="del" data-id="${esc(p.id)}">Удалить</button>`;
   if(extra)acts+=extra;
@@ -766,7 +794,7 @@ function card(p,sc,extra){
     ${link?srcHtml(p,link):''}
     ${p.status==='ok'&&sc.n?`<div class="split"><span><b style="color:var(--gold)">${fmt1(sc.e)}</b>знатоки · ${sc.ne}</span><span><b>${fmt1(sc.p)}</b>народ · ${sc.np}</span></div>${critHtml(sc.crit)}`:''}
     ${acts?`<div class="actions">${acts}</div>`:''}
-    ${open&&sc.reviews.length?`<div class="reviews">${sc.reviews.map(r=>`<div class="rv"><div class="who">${roleChip(r.u,true)}${ulink(r.u,22)}<span class="n">${r.tot}</span></div><p>${esc(r.note)}</p></div>`).join('')}</div>`:''}
+    ${open&&p.status==='ok'?discussionHtml(p,sc,cms,own):''}
   </article>`;
 }
 function loadingOrEmpty(title,text){
@@ -1164,6 +1192,10 @@ $('#view').addEventListener('click',async e=>{
   if(act==='editprof')return openEditProfile();
   if(act==='logout')return signOut(auth);
   if(act==='copyid'){try{await navigator.clipboard.writeText(S.me.id);toast('ID скопирован');}catch(err){toast('ID: '+S.me.id);}return;}
+  if(act==='creply'){S.creply[id]=b.dataset.to;S.open.add(id);render();const t=$('#cIn-'+cssId(id));if(t){t.focus();t.scrollIntoView({block:'center',behavior:'smooth'});}return;}
+  if(act==='crx'){delete S.creply[id];return render();}
+  if(act==='csend')return sendComment(id);
+  if(act==='cdel')return delComment(id);
   if(act==='rev'){S.open.has(id)?S.open.delete(id):S.open.add(id);return render();}
   b.disabled=true;
   const now=Date.now();
@@ -1187,6 +1219,7 @@ $('#view').addEventListener('input',e=>{
     l.innerHTML=usersHtml(users);}}
 });
 $('#view').addEventListener('change',e=>{const t=e.target;if(t.id==='fTag')S.draft.tag=t.value;if(t.id==='fAnon')S.draft.anon=t.checked;});
+$('#view').addEventListener('input',e=>{const t=e.target;if(t&&t.dataset&&t.dataset.cpid)S.cdraft[t.dataset.cpid]=t.value;});
 $('#view').addEventListener('focusout',()=>{setTimeout(()=>{if(S.dirty&&!$('#view').contains(document.activeElement)){S.dirty=false;render();}},0);});
 $('#view').addEventListener('submit',async e=>{
   e.preventDefault();
@@ -1461,6 +1494,7 @@ function stickerHtml(id,small){
   return `<span class="stk-s${small?' sm':''}" style="--c:${s.c};font-size:${fs.toFixed(1)}px">${icon?`<img src="${icon}" alt="">`:''}<b>${esc(s.t).replace(/\n/g,'<br>')}</b></span>`;
 }
 const IC={
+  comment:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.8A8 8 0 1 1 21 12z"/></svg>',
   useradd:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c1-4 4-6 7-6s6 2 7 6"/><path d="M19 8v6M16 11h6"/></svg>',
   cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   smile:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2"/><circle cx="9" cy="10" r=".6" fill="currentColor"/><circle cx="15" cy="10" r=".6" fill="currentColor"/></svg>',
@@ -1716,6 +1750,62 @@ async function playVoice(mid){
 }
 function setVEl(mid,on){const e=document.querySelector(`[data-vid="${CSS.escape(mid)}"]`);if(e)e.classList.toggle('playing',on);}
 
+
+
+/* ---------- комментарии к завозам ---------- */
+function cssId(x){return String(x).replace(/[^A-Za-z0-9_-]/g,'_');}
+function commentsOf(pid){return Object.entries(S.comments).map(([id,c])=>({id,...c})).filter(c=>c&&c.pid===pid&&typeof c.text==='string').sort((a,b)=>(+a.at||0)-(+b.at||0));}
+function commentHtml(c,p,own){
+  let who;
+  if(c.author){
+    const base=c.by?ulink(c.by,22):`<span class="anon-who"><span class="av-anon" aria-hidden="true">?</span>Аноним</span>`;
+    const adm=!c.by&&S.me.admin&&p.author?`<button class="ulink anon-link" data-act="profile" data-id="${esc(p.author)}">профиль ›</button>`:'';
+    who=`${base}<span class="chip au">автор завоза</span>${adm}`;
+  }else who=`${ulink(c.by,22)}${roleChip(c.by,true)}`;
+  const canDel=S.me.admin||(c.by&&c.by===S.me.id)||(c.author&&own);
+  return `<div class="cm ${c.author?'au':''}"><div class="who">${who}<span class="t">${fDT.format(+c.at||0)}</span></div><p>${esc(c.text)}</p>${canDel?`<div class="rbar"><button class="lnk mute" data-act="cdel" data-id="${esc(c.id)}">Удалить</button></div>`:''}</div>`;
+}
+function discussionHtml(p,sc,cms,own){
+  const reviewers=new Set(sc.reviews.map(r=>r.u));
+  const by=u=>cms.filter(c=>c.to===u);
+  const general=cms.filter(c=>!c.to||!reviewers.has(c.to));
+  const pid=esc(p.id);
+  const rto=S.creply[p.id];
+  const revs=sc.reviews.map(r=>{
+    const rs=by(r.u);
+    return `<div class="rv"><div class="who">${roleChip(r.u,true)}${ulink(r.u,22)}<span class="n">${r.tot}</span></div><p>${esc(r.note)}</p>
+      <div class="rbar"><button class="lnk" data-act="creply" data-id="${pid}" data-to="${esc(r.u)}">Ответить${own?' как автор':''}</button></div>
+      ${rs.length?`<div class="cms">${rs.map(c=>commentHtml(c,p,own)).join('')}</div>`:''}</div>`;
+  }).join('');
+  const asTxt=own?(p.anon?'Вы пишете как автор завоза — анонимно, ваше имя не покажется':'Вы пишете как автор завоза'):'';
+  return `<div class="disc">
+    ${sc.reviews.length?`<h5>Рецензии · ${sc.reviews.length}</h5>${revs}`:''}
+    ${general.length?`<h5>Комментарии · ${general.length}</h5><div class="cms">${general.map(c=>commentHtml(c,p,own)).join('')}</div>`:''}
+    ${!sc.reviews.length&&!general.length?'<div class="legend" style="margin:0">Пока никто ничего не написал. Будьте первым.</div>':''}
+    <div class="cform">
+      ${rto&&reviewers.has(rto)?`<div class="to">Ответ на рецензию <b>${esc(realName(rto))}</b><button class="lnk mute" data-act="crx" data-id="${pid}" aria-label="Отменить ответ">✕</button></div>`:''}
+      <div class="row2"><textarea id="cIn-${cssId(p.id)}" data-cpid="${pid}" maxlength="1000" rows="1" placeholder="${rto&&reviewers.has(rto)?'Ваш ответ…':'Написать комментарий…'}">${esc(S.cdraft[p.id]||'')}</textarea><button class="btn primary" data-act="csend" data-id="${pid}">Отправить</button></div>
+      ${asTxt?`<div class="as">${asTxt}</div>`:''}
+    </div>
+  </div>`;
+}
+async function sendComment(pid){
+  const p=allPosts().find(x=>x.id===pid);if(!p||p.status!=='ok')return;
+  const t=$('#cIn-'+cssId(pid));if(t)S.cdraft[pid]=t.value;
+  const text=String(S.cdraft[pid]||'').trim();
+  if(!text)return toast('Напишите текст комментария');
+  const own=S.myIds.has(p.id)||p.by===S.me.id;
+  const sc=scoreOf(p);const rto=S.creply[pid];
+  const to=rto&&sc.reviews.some(r=>r.u===rto)?rto:'';
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,10);
+  const data={pid,by:own&&p.anon?null:S.me.id,author:!!own,to,text:text.slice(0,1000),at:Date.now()};
+  const ok=await run(()=>setDoc(doc(db,'comments',id),data));
+  if(ok){S.cdraft[pid]='';delete S.creply[pid];if(t){t.value='';t.blur();}S.dirty=false;render();}
+}
+async function delComment(cid){
+  if(!confirm('Удалить комментарий?'))return;
+  return run(()=>deleteDoc(doc(db,'comments',cid)),'Комментарий удалён');
+}
 
 /* ---------- друзья ---------- */
 function frId(a,b){return a<b?a+'_'+b:b+'_'+a;}
