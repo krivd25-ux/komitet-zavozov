@@ -419,6 +419,23 @@ body.inchat .composer{position:static;margin:0;flex:none}
 .inst-t>b{font-size:14px}
 .inst-x{border:0;background:none;font-size:22px;color:var(--mute);width:36px;height:36px;cursor:pointer;flex:none}
 .shareic{display:inline-block;padding:0 4px;border:1px solid var(--line);border-radius:6px}
+.refline{margin-top:12px;font-size:13px;color:var(--mute)}
+.refline b{color:var(--paper);font-size:15px}
+.invite{background:linear-gradient(150deg,#fff8e6,#fbefd3 70%);border-color:rgba(176,133,42,.35)}
+.inv-top{display:flex;gap:12px;align-items:flex-start}
+.inv-ic{font-size:28px;line-height:1}
+.inv-top b{display:block;font-size:16px}
+.inv-top small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px;line-height:1.4}
+.inv-count{display:flex;align-items:baseline;gap:8px;margin:14px 0 10px}
+.inv-count b{font-size:40px;font-weight:900;line-height:1;background:linear-gradient(135deg,var(--gold2),var(--gold3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.inv-count span{font-size:13px;color:var(--mute);font-weight:600}
+.inv-link{font-size:12.5px;background:#fffdf8;border:1px dashed rgba(176,133,42,.5);border-radius:10px;padding:8px 10px;word-break:break-all;user-select:all;-webkit-user-select:all;color:var(--gold3)}
+.refs{padding:6px 12px}
+.refrow{padding:10px 0;border-top:1px solid var(--line)}
+.refrow:first-child{border-top:0}
+.ref-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ref-n{font-weight:900;font-size:22px;color:var(--gold3);min-width:30px;text-align:right}
+.ref-list{display:flex;flex-wrap:wrap;gap:6px 12px;margin:8px 0 0 38px;font-size:12.5px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -460,6 +477,8 @@ const firebaseConfig = {
 };
 /* ===================================================================== */
 
+/* реферальная ссылка: запоминаем ?ref=… до входа */
+try{const _rp=new URLSearchParams(location.search).get('ref');if(_rp&&/^[A-Za-z0-9]{10,64}$/.test(_rp)){localStorage.setItem('kz_ref',_rp);history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword,
   createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -936,6 +955,7 @@ function viewAdmin(){
   return `
   <h2>Модерация</h2>
   ${pend.length?pend.map(p=>card(p,scoreOf(p),`<button class="btn ok" data-act="approve" data-id="${esc(p.id)}">Опубликовать</button><button class="btn danger" data-act="reject" data-id="${esc(p.id)}">Отклонить</button>`)).join(''):'<div class="card legend" style="margin-bottom:12px">Очередь пуста.</div>'}
+  ${referralsAdminHtml()}
   <h2 style="margin-top:22px">Участники и роли</h2>
   <div class="sub-h">Знатоком участник становится автоматически после ${NEED_EXP.posts} опубликованных завозов и ${NEED_EXP.rates} оценок, сплетником 💎 — после ${NEED_GOS.posts} завозов и ${NEED_GOS.revs} рецензий. Если снять роль вручную, автоповышение для этого человека отключится. Знатоки дают ${Math.round(W_EXP*100)}% итога, их рецензии показываются первыми. Админы модерируют и назначают роли.</div>
   <div class="card">
@@ -983,9 +1003,11 @@ function viewProfile(uid){
       <div class="stat"><b>${reviews}</b><span>${plural(reviews,'рецензия','рецензии','рецензий')}</span></div>
       <div class="stat"><b>${pubCount}</b><span>${plural(pubCount,'завоз','завоза','завозов')}</span></div>
     </div>
+    ${own?'':`<div class="refline">🤝 Пригласил друзей: <b>${invitedOf(uid).length}</b></div>`}
     ${avg!=null?`<div class="legend" style="margin:12px 0 0">Стиль оценки: <b style="color:var(--paper)">${styleOf(avg)}</b></div>`:''}
     ${own?`<div class="actions"><button class="btn primary" data-act="editprof">Редактировать</button><button class="btn" data-act="copyid">Скопировать ID</button><button class="btn danger" data-act="logout">Выйти</button></div>`:''}
   </div>
+  ${own?inviteCardHtml():''}
   ${own?progressHtml(uid):''}
   ${own?myMentionsHtml():''}
   <h2 style="margin-top:22px">Последние оценки</h2>
@@ -1822,6 +1844,39 @@ function installBanner(){
   return `<div class="inst"><span class="inst-ic"><img src="${document.querySelector('link[rel=apple-touch-icon]').href}" alt=""></span><span class="inst-t"><b>Установите Комитет как приложение</b><span>${how} — откроется без адресной строки, с иконкой на экране.</span></span><button class="inst-x" data-act="insthide" aria-label="Скрыть">×</button></div>`;
 }
 
+/* =====================================================================
+   ПРИГЛАСИ ДРУГА
+   ===================================================================== */
+function invitedOf(uid){return Object.entries(S.names).filter(([id,u])=>u&&u.invitedBy===uid&&id!==uid).map(([id])=>id);}
+function inviteLink(){return location.origin+location.pathname+'?ref='+encodeURIComponent(S.me.id);}
+function inviteCardHtml(){
+  const n=invitedOf(S.me.id).length;
+  return `<div class="card invite">
+    <div class="inv-top"><span class="inv-ic">🤝</span><span><b>Пригласи друга</b><small>Отправь свою ссылку — когда друг зарегистрируется по ней, он засчитается тебе.</small></span></div>
+    <div class="inv-count"><b>${n}</b><span>${plural(n,'друг приглашён','друга приглашено','друзей приглашено')}</span></div>
+    <div class="inv-link" id="invLink">${esc(inviteLink())}</div>
+    <div class="actions">${navigator.share?'<button class="btn primary" data-act="invshare">Поделиться ссылкой</button>':''}<button class="btn ${navigator.share?'':'primary'}" data-act="invcopy">Скопировать</button></div>
+  </div>`;
+}
+function referralsAdminHtml(){
+  const by={};
+  for(const [id,u] of Object.entries(S.names)){if(u&&u.invitedBy&&u.invitedBy!==id)(by[u.invitedBy]=by[u.invitedBy]||[]).push(id);}
+  const rows=Object.entries(by).sort((a,b)=>b[1].length-a[1].length);
+  const total=rows.reduce((a,r)=>a+r[1].length,0);
+  return `<h2 style="margin-top:22px">Приглашения</h2>
+  <div class="sub-h">Всего пришло по приглашениям: ${total}</div>
+  ${rows.length?`<div class="card refs">${rows.map(([inv,list])=>`<div class="refrow">
+      <div class="ref-h">${ulink(inv,30)}<span class="ref-n">${list.length}</span></div>
+      <div class="ref-list">${list.map(id=>`<button class="ulink" data-act="profile" data-id="${esc(id)}">${avatarHtml(id,20)}<span>${esc(realName(id))}</span></button>`).join('')}</div>
+    </div>`).join('')}</div>`:'<div class="card legend" style="margin:0">Пока никто не пришёл по приглашению.</div>'}`;
+}
+$('#view').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-act="invshare"],[data-act="invcopy"]');if(!b)return;
+  const url=inviteLink();
+  if(b.dataset.act==='invshare'){try{await navigator.share({title:'Комитет Завозов',text:'Залетай в Комитет Завозов — оцениваем завозы по 100-балльной шкале',url});}catch(err){}}
+  else{try{await navigator.clipboard.writeText(url);toast('Ссылка скопирована');}catch(err){const el=$('#invLink');if(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);}toast('Выделите ссылку и скопируйте');}}
+});
+
 /* ---------- видимая область над клавиатурой (iOS) ---------- */
 function syncVV(){
   const vv=window.visualViewport;const hgt=vv?vv.height:innerHeight;const top=vv?vv.offsetTop:0;
@@ -1890,7 +1945,13 @@ if(configured){
       const want=S.pendingName||(snap.exists()&&snap.data().name)||u.displayName||(u.email||'').split('@')[0]||'Участник';
       S.pendingName=null;
       const cur=snap.exists()?snap.data():{};
-      if(!snap.exists()||cur.name!==want||!cur.since)await setDoc(ref,{name:want.slice(0,40),nameLower:want.slice(0,40).toLowerCase(),...(cur.since?{}:{since:Date.now()})},{merge:true});
+      let inv={};
+      try{const r=localStorage.getItem('kz_ref');
+        const fresh=!snap.exists()||(!cur.invitedBy&&+cur.since&&Date.now()-cur.since<DAY);
+        if(r&&r!==u.uid&&!cur.invitedBy&&fresh){const rs=await getDoc(doc(db,'users',r));if(rs.exists())inv={invitedBy:r};}
+        if(r)localStorage.removeItem('kz_ref');
+      }catch(e){}
+      if(!snap.exists()||cur.name!==want||!cur.since||inv.invitedBy)await setDoc(ref,{name:want.slice(0,40),nameLower:want.slice(0,40).toLowerCase(),...(cur.since?{}:{since:Date.now()}),...inv},{merge:true});
     }catch(e){console.error(e);}
     startData();
   });
